@@ -41,13 +41,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
             fontSans.variable
           )}
         >
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            {/* <VISSiteHeader /> */}
-            <div className="relative flex flex-col">
-              <div className="flex-1">{children}</div>
-            </div>
-            <TailwindIndicator />
-          </ThemeProvider>
+          {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem> */}
+          {/* <VISSiteHeader /> */}
+          <div className="relative flex flex-col">
+            <div className="flex-1">{children}</div>
+          </div>
+          <TailwindIndicator />
+          {/* </ThemeProvider> */}
         </body>
       </html>
     </>
