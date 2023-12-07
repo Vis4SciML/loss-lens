@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"f1093ab84fac4b5caa5e54b1d8679377","collectionName":"loss-landscape","type":"collection"}

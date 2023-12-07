@@ -1,0 +1,4 @@
+"NodeId","Scalar","VertexId","CriticalType","RegionSize","RegionSpan","Persistence","ClusterID","TreeID","isDummyNode","TrueNodeId","isImportantPair","isMultiPersPairNode","BranchNodeID","Points:0","Points:1","Points:2"
+0,2.6499779,39,3,1598,39,0.21971536,0,0,0,1,1,0,0,-75.56974,2.6499779,0
+2,2.4302626,0,0,1598,39,0.21971536,0,0,0,0,1,0,0,-75.56974,2.4302626,0
+2,2.4302626,0,0,1598,39,0.21971536,0,0,1,0,1,0,0,-75.56974,2.4302626,0

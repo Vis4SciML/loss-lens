@@ -1,0 +1,177 @@
+import sys
+sys.path.append('../')
+
+import argparse
+import numpy as np
+import torch
+import time
+import copy
+import tqdm
+import matplotlib.pyplot as plt
+
+from net_pbc import *
+from systems_pbc import *
+from utils import *
+from visualize import *
+from PyHessian.pyhessian import hessian_pinn
+
+def get_params(model_orig,  model_perb, direction, alpha):
+    for m_orig, m_perb, d in zip(model_orig.parameters(), model_perb.parameters(), direction):
+        m_perb.data = m_orig.data + alpha * d
+    return model_perb
+
+parser = argparse.ArgumentParser(description='Hessian of PINNs')
+
+parser.add_argument('--system', type=str, default='convection', help='System to study.')
+parser.add_argument('--seed', type=int, default=0, help='Random initialization.')
+parser.add_argument('--N_f', type=int, default=100, help='Number of collocation points to sample.')
+parser.add_argument('--optimizer_name', type=str, default='LBFGS', help='Optimizer of choice.')
+parser.add_argument('--lr', type=float, default=1.0, help='Learning rate.')
+parser.add_argument('--L', type=float, default=1.0, help='Multiplier on loss f.')
+
+parser.add_argument('--xgrid', type=int, default=256, help='Number of points in the xgrid.')
+parser.add_argument('--nt', type=int, default=100, help='Number of points in the tgrid.')
+parser.add_argument('--nu', type=float, default=1.0, help='nu value that scales the d^2u/dx^2 term. 0 if only doing advection.')
+parser.add_argument('--rho', type=float, default=1.0, help='reaction coefficient for u*(1-u) term.')
+parser.add_argument('--beta', type=float, default=1.0, help='beta value that scales the du/dx term. 0 if only doing diffusion.')
+parser.add_argument('--u0_str', default='sin(x)', help='str argument for initial condition if no forcing term.')
+parser.add_argument('--source', default=0, type=float, help="If there's a source term, define it here. For now, just constant force terms.")
+
+parser.add_argument('--layers', type=str, default='50,50,50,50,1', help='Dimensions/layers of the NN, minus the first layer.')
+parser.add_argument('--net', type=str, default='DNN', help='The net architecture that is to be used.')
+parser.add_argument('--activation', default='tanh', help='Activation to use in the network.')
+parser.add_argument('--loss_style', default='mean', help='Loss for the network (MSE, vs. summing).')
+
+parser.add_argument('--visualize', default=False, help='Visualize the solution.')
+parser.add_argument('--save_model', default=False, help='Save the model for analysis later.')
+
+parser.add_argument('--dim', default=10, help='dimension for hessian loss values calculation')
+
+args = parser.parse_args()
+
+FLAG = False
+# CUDA support
+if torch.cuda.is_available():
+    device = torch.device('cuda')
+    FLAG = True
+else:
+    device = torch.device('cpu')
+
+nu = args.nu
+beta = args.beta
+rho = args.rho
+
+DIM = int(args.dim)
+
+
+if args.system == 'diffusion': # just diffusion
+    beta = 0.0
+    rho = 0.0
+elif args.system == 'convection':
+    nu = 0.0
+    rho = 0.0
+elif args.system == 'rd': # reaction-diffusion
+    beta = 0.0
+elif args.system == 'reaction':
+    nu = 0.0
+    beta = 0.0
+
+print('nu', nu, 'beta', beta, 'rho', rho)
+
+# parse the layers list here
+orig_layers = args.layers
+layers = [int(item) for item in args.layers.split(',')]
+
+############################
+# Process data
+############################
+
+x = np.linspace(0, 2*np.pi, args.xgrid, endpoint=False).reshape(-1, 1) # not inclusive
+t = np.linspace(0, 1, args.nt).reshape(-1, 1)
+X, T = np.meshgrid(x, t) # all the X grid points T times, all the T grid points X times
+X_star = np.hstack((X.flatten()[:, None], T.flatten()[:, None])) # all the x,t "test" data
+
+# remove initial and boundaty data from X_star
+t_noinitial = t[1:]
+# remove boundary at x=0
+x_noboundary = x[1:]
+X_noboundary, T_noinitial = np.meshgrid(x_noboundary, t_noinitial)
+X_star_noinitial_noboundary = np.hstack((X_noboundary.flatten()[:, None], T_noinitial.flatten()[:, None]))
+
+# sample collocation points only from the interior (where the PDE is enforced)
+X_f_train = sample_random(X_star_noinitial_noboundary, args.N_f)
+
+if 'convection' in args.system or 'diffusion' in args.system:
+    u_vals = convection_diffusion(args.u0_str, nu, beta, args.source, args.xgrid, args.nt)
+    G = np.full(X_f_train.shape[0], float(args.source))
+elif 'rd' in args.system:
+    u_vals = reaction_diffusion_discrete_solution(args.u0_str, nu, rho, args.xgrid, args.nt)
+    G = np.full(X_f_train.shape[0], float(args.source))
+elif 'reaction' in args.system:
+    u_vals = reaction_solution(args.u0_str, rho, args.xgrid, args.nt)
+    G = np.full(X_f_train.shape[0], float(args.source))
+else:
+    print("WARNING: System is not specified.")
+
+u_star = u_vals.reshape(-1, 1) # Exact solution reshaped into (n, 1)
+Exact = u_star.reshape(len(t), len(x)) # Exact on the (x,t) grid
+
+xx1 = np.hstack((X[0:1,:].T, T[0:1,:].T)) # initial condition, from x = [-end, +end] and t=0
+uu1 = Exact[0:1,:].T # u(x, t) at t=0
+bc_lb = np.hstack((X[:,0:1], T[:,0:1])) # boundary condition at x = 0, and t = [0, 1]
+uu2 = Exact[:,0:1] # u(-end, t)
+
+# generate the other BC, now at x=2pi
+t = np.linspace(0, 1, args.nt).reshape(-1, 1)
+x_bc_ub = np.array([2*np.pi]*t.shape[0]).reshape(-1, 1)
+bc_ub = np.hstack((x_bc_ub, t))
+
+u_train = uu1 # just the initial condition
+X_u_train = xx1 # (x,t) for initial condition
+
+layers.insert(0, X_u_train.shape[-1])
+
+############################
+# Load the model
+############################
+
+set_seed(args.seed) # for weight initialization
+
+# model = PhysicsInformedNN_pbc(args.system, X_u_train, u_train, X_f_train, bc_lb, bc_ub, layers, G, nu, beta, rho,
+#                             args.optimizer_name, args.lr, args.net, args.L, args.activation, args.loss_style)
+# model.train()
+model = torch.load(f"saved_models/pretrained_{args.system}_u0{args.u0_str}_nu{nu}_beta{beta}_rho{rho}_Nf{args.N_f}_{args.layers}_L{args.L}_source{args.source}_seed{args.seed}.pt", map_location=device)
+model.dnn.eval()
+
+############################
+# Calculate the Hessian
+############################
+
+start = time.time()
+
+# load loss criterion
+criterion = torch.nn.CrossEntropyLoss()
+
+# make the model a copy
+model_init = copy.deepcopy(model.dnn)
+model_init.eval()
+
+# data that the evaluator will use when evaluating loss
+x, y = iter(X_f_train).__next__()
+
+# send the model and datato GPU if available
+if FLAG == True:
+    model.cuda()
+    x = x.cuda()
+    y = y.cuda()
+
+# calculate the hessian eigenvalues and eigenvectors
+x = torch.tensor(X[:, 0:1], requires_grad=True).float().to(device)
+t = torch.tensor(X[:, 1:2], requires_grad=True).float().to(device)
+
+hessian_comp = hessian_pinn(model, model_init, criterion, data=(x, t), cuda=FLAG)
+top_eigenvalues, top_eigenvector = hessian_comp.eigenvalues(top_n=DIM)
+print("Top eigenvalues: ", top_eigenvalues)
+
+end = time.time()
+print('Time taken: ', end - start)

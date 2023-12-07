@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"1a06b16e77bb466c9aad46a1191cce49","collectionName":"confusion-matrix","type":"collection"}

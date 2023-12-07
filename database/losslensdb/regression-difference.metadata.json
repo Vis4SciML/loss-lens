@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"ab9e53ee7cc243beb2fc450a330506d9","collectionName":"regression-difference","type":"collection"}

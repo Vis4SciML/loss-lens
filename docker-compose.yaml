@@ -1,0 +1,50 @@
+version: "3"
+services:
+  gui:
+    build: ./gui
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./gui:/gui
+    depends_on:
+      - api
+    environment:
+      - API_URL=http://api:5000
+    command: bash -c "npm install
+      && npm run dev"
+
+  api:
+    build: ./server
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server:/server
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_HOST=mongodb
+    command: gunicorn server2:app -c gunicorn.conf.py
+
+  mongodb:
+    image: mongo
+    ports:
+      - "27018:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=pass
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d
+      - mongo-data:/data/db
+
+  mongo-express:
+    image: mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=pass
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+
+volumes:
+  mongo-data:
+    driver: local

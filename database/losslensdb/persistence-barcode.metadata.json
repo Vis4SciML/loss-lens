@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"d6c8841c5ad1486693e9a315b23eef2f","collectionName":"persistence-barcode","type":"collection"}

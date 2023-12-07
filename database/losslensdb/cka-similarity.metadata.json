@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"210680ef382b48d08e7e1d0e88b8b26d","collectionName":"cka-similarity","type":"collection"}

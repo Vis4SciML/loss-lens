@@ -1,0 +1,2 @@
+python3 train_resnet_pyhessian_cifar10.py --batch-size=128 --test-batch-size=128 --epochs=10 --lr=0.01 --lr-decay=0.1 --depth=20 --augmentation=False --testing=augmentation
+python3 train_resnet_pyhessian_cifar10.py --batch-size=128 --test-batch-size=128 --epochs=10 --lr=0.01 --lr-decay=0.1 --depth=20 --augmentation=True --testing=augmentation

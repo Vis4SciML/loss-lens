@@ -1,0 +1,19 @@
+{
+  "data":  [
+    {
+      "modelName": "vit",
+      "modelDescription": "2-layer MLP, 512 hidden units, batch size 128, 10 epochs",
+      "modelDataset": "MNIST",
+      "modelDatasetDescription": "Original MNIST dataset, 60k training images, 10k test images",
+      "numberOfModes": 3
+    },
+    {
+      "modelName": "augvit",
+      "modelDescription": "2-layer MLP, 512 hidden units, batch size 128, 10 epochs",
+      "modelDataset": "MNIST + Corrupted MNIST images",
+      "modelDatasetDescription": "Original MNIST dataset, 60k training images, 10k test images, Corrupted ",
+      "numberOfModes": 3
+    }
+  ],
+  "id": "vit"
+}
