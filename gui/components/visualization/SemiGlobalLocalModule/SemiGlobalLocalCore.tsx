@@ -28,8 +28,6 @@ function render(
   svgRef: React.RefObject<SVGSVGElement>,
   wraperRef: React.RefObject<HTMLDivElement>,
   data: SemiGlobalLocalStructure,
-  // width: number,
-  // height: number,
   updateSelectedModelIdModeId: (id: string) => void,
   modelUIList: ModelUI[],
   modelUI: ModelUI
@@ -204,8 +202,6 @@ function render(
     ])
     .range([innerRadius, outerRadius])
 
-  console.log("JUS")
-  console.log(nodes)
   const numberOfMetrics = Object.keys(nodes[0].localMetric).length
   const barIndexScale = d3
     .scaleBand()
@@ -269,10 +265,13 @@ function render(
   //
 
   performanceGroup
-    .selectAll(".performanceBackgroundCircle1")
+    .selectAll(".outerRing")
     .data((d) => [d])
     .join("circle")
-    .attr("class", "performanceBackgroundCircle1")
+    .attr("class", "outerRing")
+    .attr("id", (d) => {
+      return "outerRing-" + d.modelId + "-" + d.modeId
+    })
     .attr("r", outerRadius + 22)
     .attr("fill", semiGlobalLocalSturctureColor.itemBackgroundColor)
     .attr("cx", 0)
@@ -280,10 +279,10 @@ function render(
     .attr("stroke", semiGlobalLocalSturctureColor.strokeColor)
 
   performanceGroup
-    .selectAll(".performanceBackgroundCircle2")
+    .selectAll(".middleRing")
     .data((d) => [d])
     .join("circle")
-    .attr("class", "performanceBackgroundCircle2")
+    .attr("class", "middleRing")
     .attr("r", outerRadius + 2)
     .attr("fill", semiGlobalLocalSturctureColor.itemInnerBackgroundColor)
     .attr("cx", 0)
@@ -291,10 +290,10 @@ function render(
     .attr("stroke", semiGlobalLocalSturctureColor.strokeColor)
 
   performanceGroup
-    .selectAll(".performanceBackgroundCircle3")
+    .selectAll(".innerRing")
     .data((d) => [d])
     .join("circle")
-    .attr("class", "performanceBackgroundCircle3")
+    .attr("class", "innerRing")
     .attr("r", barScale(0))
     .attr("fill", semiGlobalLocalSturctureColor.itemInnerBackgroundColor)
     .attr("cx", 0)
@@ -379,10 +378,13 @@ function render(
         -Math.cos(performanceTextScale(i)) * (outerRadius + 40)
       }) translate(0, 10)`
     })
-    .attr("x", (d, i) => Math.sin(performanceTextScale(i)) * (outerRadius + 40))
+    .attr(
+      "x",
+      (_d, i) => Math.sin(performanceTextScale(i)) * (outerRadius + 40)
+    )
     .attr(
       "y",
-      (d, i) => -Math.cos(performanceTextScale(i)) * (outerRadius + 40)
+      (_d, i) => -Math.cos(performanceTextScale(i)) * (outerRadius + 40)
     )
     .text((d) => d[0].slice(0, 1).toUpperCase() + d[0].slice(1))
 
@@ -395,7 +397,7 @@ function render(
     .attr("fill", semiGlobalLocalSturctureColor.textColor)
     .attr("stroke", "none")
     .attr("font-size", 12)
-    .attr("transform", (d, i) => {
+    .attr("transform", (_d, i) => {
       const angle = performanceTextScale(i) * (180 / Math.PI)
       return `rotate(${angle}, ${
         Math.sin(performanceTextScale(i)) * (outerRadius + 40)
@@ -403,10 +405,13 @@ function render(
         -Math.cos(performanceTextScale(i)) * (outerRadius + 40)
       }) translate(0, 35)`
     })
-    .attr("x", (d, i) => Math.sin(performanceTextScale(i)) * (outerRadius + 40))
+    .attr(
+      "x",
+      (_d, i) => Math.sin(performanceTextScale(i)) * (outerRadius + 40)
+    )
     .attr(
       "y",
-      (d, i) => -Math.cos(performanceTextScale(i)) * (outerRadius + 40)
+      (_d, i) => -Math.cos(performanceTextScale(i)) * (outerRadius + 40)
     )
     .text((d) => roundToPercentage(d[1]))
 
@@ -484,18 +489,19 @@ function render(
     .attr("cx", 0)
     .attr("cy", 0)
     .on("mouseover", (_event, d) => {
-      d3.select("#" + d.modelId + "-" + d.modeId)
-        .attr("stroke-width", 2)
-        .attr("stroke", "black")
-        .style("cursor", "pointer")
+      d3.select("#" + d.modelId + "-" + d.modeId).style("cursor", "pointer")
     })
     .on("mouseout", (_event, d) => {
-      d3.select("#" + d.modelId + "-" + d.modeId)
-        .attr("stroke-width", 0)
-        .attr("stroke", "none")
-        .style("cursor", "default")
+      d3.select("#" + d.modelId + "-" + d.modeId).style("cursor", "default")
     })
-    .on("click", (event, d) => {
+    .on("click", (_event, d) => {
+      d3.selectAll("[id^=outerRing-" + d.modelId + "]")
+        .attr("stroke-width", 1)
+        .attr("stroke", semiGlobalLocalSturctureColor.strokeColor)
+      d3.select("#outerRing-" + d.modelId + "-" + d.modeId)
+        .attr("stroke-width", 4)
+        .attr("stroke", (d) => modelColorMap[d.modelId])
+        .style("cursor", "pointer")
       updateSelectedModelIdModeId(d.modelId + "-" + d.modeId)
     })
 
@@ -508,6 +514,7 @@ function render(
       [0, 0],
       [width, height],
     ])
+
     .scaleExtent([0.5, 8])
 
   svgbase.call(zoom)
@@ -521,7 +528,7 @@ function render(
   svgbase
     .call(zoom.transform, d3.zoomIdentity.scale(1))
     .transition()
-    .duration(750)
+    .duration(50)
     .call(
       zoom.transform,
       d3.zoomIdentity.scale(0.7).translate(width / 6, height / 6)
@@ -547,24 +554,14 @@ export default function SemiGlobalLocalCore({
       const divElement = wraperRef.current
       const width = divElement.clientWidth
       const height = divElement.clientHeight
-
-      console.log("updateChart")
-      console.log(width)
-      console.log(height)
-
-      // Use the dimensions to render or update your D3 chart
-      // Example: Update D3 chart with new dimensions
       const svgE = d3.select(svg.current)
       svgE.attr("width", width).attr("height", height)
-
-      // Your D3 rendering logic here...
     }
 
     // Call the updateChart function initially and on window resize
     updateChart()
     window.addEventListener("resize", updateChart)
 
-    // Clean up the event listener on component unmount
     return () => {
       window.removeEventListener("resize", updateChart)
     }
