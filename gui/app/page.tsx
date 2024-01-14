@@ -92,19 +92,15 @@ export default function IndexPage() {
       </div>
       <div className="grid grid-cols-12">
         <div className="col-span-8 h-[calc(100vh-4rem)]">
-          <Suspense fallback={<Loader />}>
-            <SemiGlobalLocalModule height={height} width={(width * 4) / 9} />
-          </Suspense>
+          <SemiGlobalLocalModule height={height} width={(width * 4) / 9} />
           <Suspense fallback={<Loader />}>
             <ModelCardList />
           </Suspense>
-          <Suspense fallback={<Loader />}>
-            <LocalStructure height={400} width={400} />
-          </Suspense>
+          <LocalStructure height={400} width={400} />
         </div>
-        {/* <Suspense fallback={<Loader />}> */}
-        {/*   <ModelComparisonPanel height={height} width={(width * 4) / 9} /> */}
-        {/* </Suspense> */}
+        <Suspense fallback={<Loader />}>
+          <ModelComparisonPanel height={height} width={(width * 4) / 9} />
+        </Suspense>
       </div>
     </section>
   )

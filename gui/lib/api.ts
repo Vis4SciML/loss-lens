@@ -51,6 +51,9 @@ export const fetchLayerSimilarityData = async (
   id: string,
   modelIdModeIds: string[]
 ) => {
+  if (modelIdModeIds[0] === "" || modelIdModeIds[1] === "") {
+    return
+  }
   const modelIdModeIdsParts = modelIdModeIds.map((modelIdModeId) =>
     modelIdModeId.split("-")
   )
@@ -68,6 +71,9 @@ export const fetchConfusionMatrixBarData = async (
   id: string,
   modelIdModeIds: string[]
 ) => {
+  if (modelIdModeIds[0] === "" || modelIdModeIds[1] === "") {
+    return
+  }
   const modelIdModeIdsParts = modelIdModeIds.map((modelIdModeId) =>
     modelIdModeId.split("-")
   )
@@ -85,6 +91,9 @@ export const fetchRegressionDifferenceData = async (
   id: string,
   modelIdModeIds: string[]
 ) => {
+  if (modelIdModeIds[0] === "" || modelIdModeIds[1] === "") {
+    return
+  }
   const modelIdModeIdsParts = modelIdModeIds.map((modelIdModeId) =>
     modelIdModeId.split("-")
   )

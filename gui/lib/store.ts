@@ -1,18 +1,22 @@
+import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu"
 import { atom } from "jotai"
 import { atomFamily, loadable, selectAtom } from "jotai/utils"
 
 import {
-  GlobalInfo,
-  LossLandscape,
-  SemiGlobalLocalStructure,
+  ConfusionMaterixBarData,
+  LayerSimilarityData,
+  RegressionDifferenceData,
   SystemConfig,
 } from "@/types/losslens"
 
 import {
+  fetchConfusionMatrixBarData,
+  fetchLayerSimilarityData,
   fetchLossLandscapeData,
   fetchMergeTreeData,
   fetchModelMetaDataList,
   fetchPersistenceBarcodeData,
+  fetchRegressionDifferenceData,
   fetchSemiGlobalLocalStructureData,
 } from "./api"
 
@@ -163,3 +167,169 @@ export const fetchCheckpointMergeTreeDataAtomFamily = atomFamily(
       })
     )
 )
+
+/**
+ * Layer Similarity data
+ */
+
+export const layerSimilarityDataAtom = atom(async (get) => {
+  const selectedCheckPointIdList = get(selectedCheckPointIdListSourceAtom)
+  if (
+    selectedCheckPointIdList[0] === "" ||
+    selectedCheckPointIdList[1] === ""
+  ) {
+    return null
+  } else {
+    try {
+      const data = await fetchLayerSimilarityData(
+        get(selectedCaseStudyAtom),
+        selectedCheckPointIdList
+      )
+      return data
+    } catch (error) {
+      throw error
+    }
+  }
+})
+
+export const loadableLayerSimilarityDataAtom = loadable(layerSimilarityDataAtom)
+
+// export const loadLayerSimilarityDataAtom = atom(
+//   async (get) => get(layerSimilarityDataAtom),
+//   async (get, set) => {
+//     const selectedModeIdList = get(selectedModeIdListAtom)
+//     const selectedCaseStudy = get(selectedCaseStudyAtom)
+//     if (!selectedCaseStudy || selectedModeIdList.includes("")) return
+//     const promise = fetchLayerSimilarityData(
+//       selectedCaseStudy,
+//       selectedModeIdList
+//     ).then((data: LayerSimilarityData) => {
+//       const selectedXLabels = data.xLabels.map((xLabel) => {
+//         if (data.caseId === "resnet20" && xLabel.includes("conv")) {
+//           return true
+//         } else if (data.caseId === "vit" && xLabel.includes("transformer")) {
+//           return true
+//         } else if (data.caseId === "pinn" && xLabel !== "") {
+//           return true
+//         }
+//         return false
+//       })
+//       const selectedYLabels = data.yLabels.map((yLabel) => {
+//         if (data.caseId === "resnet20" && yLabel.includes("conv")) {
+//           return true
+//         } else if (data.caseId === "vit" && yLabel.includes("transformer")) {
+//           return true
+//         } else if (data.caseId === "pinn" && yLabel !== "") {
+//           return true
+//         }
+//
+//         return false
+//       })
+//       set(XCheckBoxAtom, selectedXLabels)
+//       set(YCheckBoxAtom, selectedYLabels)
+//       return data
+//     })
+//     set(layerSimilarityDataAtom, promise)
+//   }
+// )
+//
+type Checked = DropdownMenuCheckboxItemProps["checked"]
+
+export const XCheckBoxAtom = atom<Checked[]>([])
+export const YCheckBoxAtom = atom<Checked[]>([])
+
+export const updateXCheckBoxAtom = atom(
+  async (get) => get(XCheckBoxAtom),
+  async (get, set) => {}
+)
+
+export const updateYCheckBoxAtom = atom(
+  async (get) => get(YCheckBoxAtom),
+  async (get, set) => {}
+)
+
+/**
+ * Confusion Matrix Bar data
+ */
+
+export const confusionMatrixBarDataAtom = atom(async (get) => {
+  const selectedCheckPointIdList = get(selectedCheckPointIdListSourceAtom)
+  if (
+    selectedCheckPointIdList[0] === "" ||
+    selectedCheckPointIdList[1] === ""
+  ) {
+    return null
+  } else {
+    try {
+      const data = await fetchConfusionMatrixBarData(
+        get(selectedCaseStudyAtom),
+        selectedCheckPointIdList
+      )
+      return data
+    } catch (error) {
+      throw error
+    }
+  }
+})
+
+export const loadableConfusionMatrixBarDataAtom = loadable(
+  confusionMatrixBarDataAtom
+)
+
+// export const loadConfusionMatrixBarDataAtom = atom(
+//   async (get) => get(confusionMatrixBarDataAtom),
+//   async (get, set, modelIdModeIds: string[]) => {
+//     const selectedCaseStudy = get(selectedCaseStudyAtom)
+//     if (!selectedCaseStudy) return
+//     const promise = fetchConfusionMatrixBarData(
+//       selectedCaseStudy,
+//       modelIdModeIds
+//     ).then((data: ConfusionMaterixBarData) => {
+//       return data
+//     })
+//     set(confusionMatrixBarDataAtom, promise)
+//   }
+// )
+
+/**
+ * Regression Difference Data
+ */
+
+export const regressionDifferenceDataAtom = atom(async (get) => {
+  const selectedCheckPointIdList = get(selectedCheckPointIdListSourceAtom)
+  if (
+    selectedCheckPointIdList[0] === "" ||
+    selectedCheckPointIdList[1] === ""
+  ) {
+    return null
+  } else {
+    try {
+      const data = await fetchRegressionDifferenceData(
+        get(selectedCaseStudyAtom),
+        selectedCheckPointIdList
+      )
+      return data
+    } catch (error) {
+      throw error
+    }
+  }
+})
+
+export const loadableRegressionDifferenceDataAtom = loadable(
+  regressionDifferenceDataAtom
+)
+
+// export const loadRegressionDifferenceDataAtom = atom(
+//   async (get) => get(regressionDifferenceDataAtom),
+//   async (get, set, modelIdModeIds: string[]) => {
+//     const selectedCaseStudy = get(selectedCaseStudyAtom)
+//     if (!selectedCaseStudy) return
+//     const promise = fetchRegressionDifferenceData(
+//       selectedCaseStudy,
+//       modelIdModeIds
+//     ).then((data: RegressionDifferenceData) => {
+//       return data
+//     })
+//     set(regressionDifferenceDataAtom, promise)
+//   }
+// )
