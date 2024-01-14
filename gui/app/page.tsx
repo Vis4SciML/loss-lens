@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react"
 import { atom, useAtom } from "jotai"
 
 import { siteConfig } from "@/config/site"
-import { systemConfigAtom } from "@/lib/losslensStore"
+import { systemConfigAtom } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -54,7 +54,6 @@ export default function IndexPage() {
   )
   const [systemConfigs, setSystemConfigs] = useAtom(systemConfigAtom)
   const handleClick = () => {
-    console.log("selectedCaseStudyUI", selectedCaseStudyUI)
     setSystemConfigs({
       ...systemConfigs,
       selectedCaseStudy: selectedCaseStudyUI,
@@ -103,46 +102,10 @@ export default function IndexPage() {
             <LocalStructure height={400} width={400} />
           </Suspense>
         </div>
-        <Suspense fallback={<Loader />}>
-          <ModelComparisonPanel height={height} width={(width * 4) / 9} />
-        </Suspense>
+        {/* <Suspense fallback={<Loader />}> */}
+        {/*   <ModelComparisonPanel height={height} width={(width * 4) / 9} /> */}
+        {/* </Suspense> */}
       </div>
-      {/* <div className="grid grid-cols-9 gap-2 "> */}
-      {/*   <div className="col-span-1"> */}
-      {/*     <div className="pb-2"> */}
-      {/*       <div className="flex"> */}
-      {/*         <div className="w-40"> */}
-      {/*           <Select */}
-      {/*             onValueChange={(value: string) => { */}
-      {/*               setSelectedCaseStudyUI(value) */}
-      {/*             }} */}
-      {/*           > */}
-      {/*             <SelectTrigger id="framework"> */}
-      {/*               <SelectValue placeholder="Select Case Study" /> */}
-      {/*             </SelectTrigger> */}
-      {/*             <SelectContent className="w-40" position="popper"> */}
-      {/*               {caseStudyItems} */}
-      {/*             </SelectContent> */}
-      {/*           </Select> */}
-      {/*         </div> */}
-      {/**/}
-      {/*       </div> */}
-      {/*     </div> */}
-      {/*     <Suspense fallback={<Loader />}> */}
-      {/*       <ModelCardList /> */}
-      {/*     </Suspense> */}
-      {/*   </div> */}
-      {/*   <div className="col-span-4"> */}
-      {/*     <Suspense fallback={<Loader />}> */}
-      {/*       <SemiGlobalLocalModule height={height} width={(width * 4) / 9} /> */}
-      {/*     </Suspense> */}
-      {/*   </div> */}
-      {/*   <div className="col-span-4"> */}
-      {/*     <Suspense fallback={<Loader />}> */}
-      {/*       <ModelComparisonPanel height={height} width={(width * 4) / 9} /> */}
-      {/*     </Suspense> */}
-      {/*   </div> */}
-      {/* </div> */}
     </section>
   )
 }

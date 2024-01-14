@@ -7,7 +7,7 @@ import { GlobalInfo, LossLandscape } from "@/types/losslens"
 import { lossContourColor } from "@/styles/vis-color-scheme"
 
 interface LossContourCoreProp {
-  data: LossLandscape
+  data: LossLandscape | Promise<LossLandscape> | null
   height: number
   width: number
   globalInfo: GlobalInfo
@@ -22,8 +22,11 @@ function render(
   globalInfo: GlobalInfo
 ) {
   const divElement = wraperRef.current
-  const width = divElement.clientWidth
-  const height = divElement.clientHeight
+  const width = divElement?.clientWidth ?? 300
+  const height = divElement?.clientHeight ?? 300
+
+  console.log("render")
+  console.log(data)
 
   const margin = {
     top: 25,
@@ -49,12 +52,12 @@ function render(
   const lengthOfGrid = data.grid.length
   const q = w / lengthOfGrid
 
-  const x0 = -q / 2
-  const x1 = w + 28 + q
-  const y0 = -q / 2
-  const y1 = h + q
-  const n = Math.ceil((x1 - x0) / q)
-  const m = Math.ceil((y1 - y0) / q)
+  // const x0 = -q / 2
+  // const x1 = w + 28 + q
+  // const y0 = -q / 2
+  // const y1 = h + q
+  // const n = Math.ceil((x1 - x0) / q)
+  // const m = Math.ceil((y1 - y0) / q)
 
   const thresholdArray = []
   for (let i = 0; i < 15; i++) {
@@ -227,9 +230,7 @@ export default function LossContourCore({
   }, [])
 
   React.useEffect(() => {
-    if (!data) return
-    const clonedData = JSON.parse(JSON.stringify(data))
-    render(svg, wraperRef, clonedData, globalInfo)
+    render(svg, wraperRef, data, globalInfo)
   }, [data, width, height, globalInfo])
 
   return (

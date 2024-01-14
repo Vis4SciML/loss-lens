@@ -3,39 +3,46 @@
 import { useEffect } from "react"
 import { useAtom } from "jotai"
 
-import {
-  loadMergeTreeData2Atom,
-  loadMergeTreeDataAtom,
-  systemConfigAtom,
-} from "@/lib/losslensStore"
+import { isMergeTreeDataType } from "@/types/losslens"
+import { loadMergeTreeDataAtom, systemConfigAtom } from "@/lib/losslensStore"
+import { fetchCheckpointMergeTreeDataAtomFamily } from "@/lib/store"
 
 import MergeTreeCore from "./MergeTreeCore"
+
+interface MergeTreeProps {
+  height: number
+  width: number
+  checkpointId: string
+}
 
 export default function MergeTree({
   height,
   width,
-  modelId,
-  modeId,
-  leftRight,
-}) {
-  const [systemConfig] = useAtom(systemConfigAtom)
-  let loadMergeTreeDataAbsAtom = loadMergeTreeDataAtom
-  if (leftRight === "right") {
-    loadMergeTreeDataAbsAtom = loadMergeTreeData2Atom
-  }
-
-  const [data, fetchData] = useAtom(loadMergeTreeDataAbsAtom)
-  useEffect(() => {
-    if (systemConfig) {
-      fetchData(modelId, modeId)
-    }
-  }, [systemConfig, fetchData, modelId, modeId])
-
-  if (data) {
-    return <MergeTreeCore height={height} width={width} data={data} />
-  }
-
-  return (
-    <div className={" h-[900px] w-full bg-gray-100 text-center "}>Empty</div>
+  checkpointId,
+}: MergeTreeProps) {
+  const [mergeTreeDataLoader] = useAtom(
+    fetchCheckpointMergeTreeDataAtomFamily(checkpointId)
   )
+
+  if (mergeTreeDataLoader.state === "hasError") {
+    return <div>error</div>
+  } else if (mergeTreeDataLoader.state === "loading") {
+    return <div>loading</div>
+  } else {
+    if (mergeTreeDataLoader.data === null) {
+      return (
+        <div className={" h-[900px] w-full bg-gray-100 text-center "}>
+          Empty
+        </div>
+      )
+    } else {
+      return (
+        <MergeTreeCore
+          height={height}
+          width={width}
+          data={mergeTreeDataLoader.data}
+        />
+      )
+    }
+  }
 }

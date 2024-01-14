@@ -14,7 +14,7 @@ interface LossHeatMapCoreProp {
 
 function render(
   svgRef: React.RefObject<SVGSVGElement>,
-  data: LossLandscape,
+  data: LossLandscape | Promise<LossLandscape> | null,
   width: number,
   height: number,
   globalInfo: GlobalInfo

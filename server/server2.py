@@ -28,8 +28,8 @@ def get_model_metadata():
 @app.route("/loss-landscape-data", methods=["GET"])
 def get_loss_landscape_data():
     id = request.args.get("id")
-    modelId = request.args.get("modelId")
-    modeId = request.args.get("modeId")
+    modelIdModeId = request.args.get("modelIdModeId")
+    modelId, modeId = modelIdModeId.split("-")
     data = getDocument(LOSS_LANDSCAPE, {"caseId": id, "modelId": modelId, "modeId": modeId})
     return jsonify(data)
 
@@ -37,8 +37,8 @@ def get_loss_landscape_data():
 @app.route("/persistence-barcode-data", methods=["GET"])
 def get_persistence_barcode_data():
     id = request.args.get("id")
-    modelId = request.args.get("modelId")
-    modeId = request.args.get("modeId")
+    modelIdModeId = request.args.get("modelIdModeId")
+    modelId, modeId = modelIdModeId.split("-")
     data = getDocument(PERSISTENCE_BARCODE, {"caseId": id, "modelId": modelId, "modeId": modeId})
     return jsonify(data)
 
@@ -46,8 +46,8 @@ def get_persistence_barcode_data():
 @app.route("/merge-tree-data", methods=["GET"])
 def get_merge_tree_data():
     id = request.args.get("id")
-    modelId = request.args.get("modelId")
-    modeId = request.args.get("modeId")
+    modelIdModeId = request.args.get("modelIdModeId")
+    modelId, modeId = modelIdModeId.split("-")
     data = getDocument(MERGE_TREE, {"caseId": id, "modelId": modelId, "modeId": modeId})
     return jsonify(data)
 

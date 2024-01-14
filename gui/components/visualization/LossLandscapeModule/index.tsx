@@ -1,58 +1,62 @@
 "use client"
 
-import { useEffect } from "react"
+import { Suspense, useEffect } from "react"
 import { useAtom } from "jotai"
 
 import {
-  loadGlobalInfoAtom,
-  loadLossLandscapeDataAtom1,
-  loadLossLandscapeDataAtom2,
-  lossLandscapeDataAtom1,
-  lossLandscapeDataAtom2,
-  systemConfigAtom,
-} from "@/lib/losslensStore"
+  fetchCheckpointLossLandscapeDataAtomFamily,
+  modelIDLoadableAtom,
+} from "@/lib/store"
 
 import LossContourCore from "./LossContour"
-import LossHeatMapCore from "./LossHeatMapCore"
+
+interface LossLandscapeProps {
+  height: number
+  width: number
+  checkpointId: string
+}
 
 export default function LossLandscape({
   height,
   width,
-  modelId,
-  modeId,
-  leftRight,
-}) {
-  const [systemConfig] = useAtom(systemConfigAtom)
-  const [globalInfo, loadGlobalInfo] = useAtom(loadGlobalInfoAtom)
+  checkpointId,
+}: LossLandscapeProps) {
+  const [lossLandscapeDataLoader] = useAtom(
+    fetchCheckpointLossLandscapeDataAtomFamily(checkpointId)
+  )
+  const [globalInfoLoader] = useAtom(modelIDLoadableAtom)
 
-  let lossLandscapeDataAbsAtom = lossLandscapeDataAtom1
-  let loadLossLandscapeDataAbsAtom = loadLossLandscapeDataAtom1
-
-  if (leftRight === "right") {
-    lossLandscapeDataAbsAtom = lossLandscapeDataAtom2
-    loadLossLandscapeDataAbsAtom = loadLossLandscapeDataAtom2
-  }
-  const [data] = useAtom(lossLandscapeDataAbsAtom)
-
-  const [, fetchData] = useAtom(loadLossLandscapeDataAbsAtom)
-
-  useEffect(() => {
-    if (systemConfig) {
-      fetchData(modelId, modeId)
-      loadGlobalInfo()
+  if (
+    lossLandscapeDataLoader.state === "hasError" ||
+    globalInfoLoader.state === "hasError"
+  ) {
+    return <div>error</div>
+  } else if (
+    lossLandscapeDataLoader.state === "loading" ||
+    globalInfoLoader.state === "loading"
+  ) {
+    return <div>loading</div>
+  } else {
+    if (
+      lossLandscapeDataLoader.data === null ||
+      globalInfoLoader.data === null
+    ) {
+      console.log("LossLandscape data not obtained")
+      console.log(lossLandscapeDataLoader.data)
+      console.log(globalInfoLoader.data)
+      return <div className={" h-[900px] w-full text-center "}>Empty</div>
+    } else {
+      console.log("LossLandscape data obtained")
+      console.log(lossLandscapeDataLoader.data)
+      console.log(globalInfoLoader.data)
+      return (
+        <LossContourCore
+          height={height}
+          width={width}
+          data={lossLandscapeDataLoader.data}
+          globalInfo={globalInfoLoader.data}
+        />
+      )
     }
-  }, [systemConfig, fetchData, modelId, modeId, loadGlobalInfo])
-
-  if (data && globalInfo) {
-    return (
-      <LossContourCore
-        height={height}
-        width={width}
-        data={data}
-        globalInfo={globalInfo}
-      />
-    )
   }
-
-  return <div className={" h-[900px] w-full text-center "}>Empty</div>
 }

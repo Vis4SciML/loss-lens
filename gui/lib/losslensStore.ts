@@ -5,6 +5,7 @@ import { selectAtom } from "jotai/utils"
 import {
   ConfusionMaterixBarData,
   GlobalInfo,
+  isModelMetaData,
   LayerSimilarityData,
   LossLandscape,
   MergeTreeData,
@@ -158,16 +159,27 @@ export const updateModelUIListAtom = atom(
 export const selectedModeIdListAtom = atom<string[]>([])
 export const updateSelectedModeIdListAtom = atom(
   null,
-  (get, set, modelIdModeId: string) => {
-    const selectedModeIdList = get(selectedModeIdListAtom)
-    if (selectedModeIdList.includes(modelIdModeId)) {
-      set(
-        selectedModeIdListAtom,
-        selectedModeIdList.filter((id) => id !== modelIdModeId)
-      )
-    } else if (selectedModeIdList.length < 2) {
-      set(selectedModeIdListAtom, [...selectedModeIdList, modelIdModeId])
+  async (get, set, modelIdModeId: string) => {
+    let selectedModeIdList = get(selectedModeIdListAtom)
+    const modelMetaDataList = get(modelMetaDataListAtom)
+
+    if (!modelMetaDataList) return
+
+    // initialize selectedModeIdList
+    if (selectedModeIdList.length !== modelMetaDataList.value.length) {
+      selectedModeIdList = modelMetaDataList.value.map((_modelMetaData) => "")
     }
+
+    modelMetaDataList.value.forEach((modelMetaData, index) => {
+      if (modelMetaData.modelId === modelIdModeId.split("-")[0]) {
+        if (selectedModeIdList[index] === modelIdModeId) {
+          selectedModeIdList[index] = ""
+        } else {
+          selectedModeIdList[index] = modelIdModeId
+        }
+      }
+    })
+    set(selectedModeIdListAtom, selectedModeIdList)
   }
 )
 
@@ -175,123 +187,144 @@ export const updateSelectedModeIdListAtom = atom(
  * Loss Landscape Data
  */
 
+type LossLandscapeDataAtomType = {
+  [key: string]: LossLandscape | Promise<LossLandscape> | null
+}
+
 const createLossLandscapeDataAtom = () => {
-  const baseAtom = atom<LossLandscape | Promise<LossLandscape> | null>(null)
+  const baseAtom = atom<LossLandscapeDataAtomType>({})
   const valueAtom = atom(async (get) => get(baseAtom))
-  const loadAtom = atom(
-    null,
-    async (get, set, modelId: string, modeId: string) => {
-      const selectedCaseStudy = get(selectedCaseStudyAtom)
-      if (!selectedCaseStudy) return
-      const promise = fetchLossLandscapeData(
-        selectedCaseStudy,
-        modelId,
-        modeId
-      ).then((data: LossLandscape) => {
-        return data
-      })
-      set(baseAtom, promise)
-    }
-  )
+  const loadAtom = atom(null, async (get, set, modelIdModeId: string) => {
+    const selectedCaseStudy = get(selectedCaseStudyAtom)
+    const selectedModeIdList = get(selectedModeIdListAtom)
+    const lossLandscapeData = get(baseAtom)
+    if (!selectedCaseStudy || !selectedModeIdList || modelIdModeId === "")
+      return
+    const promise = fetchLossLandscapeData(
+      selectedCaseStudy,
+      modelIdModeId
+    ).then((data: LossLandscape) => {
+      return data
+    })
+    lossLandscapeData[modelIdModeId] = promise
+    const newData = { ...lossLandscapeData }
+
+    set(baseAtom, newData)
+  })
   return [valueAtom, loadAtom]
 }
 
-export const [lossLandscapeDataAtom1, loadLossLandscapeDataAtom1] =
+export const [lossLandscapeDataAtom, loadLossLandscapeDataAtom] =
   createLossLandscapeDataAtom()
 
-export const [lossLandscapeDataAtom2, loadLossLandscapeDataAtom2] =
-  createLossLandscapeDataAtom()
-
-export const twoLossLandscapeLossScaleAtom = atom(async (get) => {
-  const lossLandscapeData1 = get(lossLandscapeDataAtom1)
-  const lossLandscapeData2 = get(lossLandscapeDataAtom2)
-  if (!lossLandscapeData1 || !lossLandscapeData2) return
-  console.log(lossLandscapeData1, lossLandscapeData2)
-  return 214
-})
+// // to delete
+// export const [lossLandscapeDataAtom1, loadLossLandscapeDataAtom1] =
+//   createLossLandscapeDataAtom()
+//
+// export const [lossLandscapeDataAtom2, loadLossLandscapeDataAtom2] =
+//   createLossLandscapeDataAtom()
+//
+// export const twoLossLandscapeLossScaleAtom = atom(async (get) => {
+//   const lossLandscapeData1 = get(lossLandscapeDataAtom1)
+//   const lossLandscapeData2 = get(lossLandscapeDataAtom2)
+//   if (!lossLandscapeData1 || !lossLandscapeData2) return
+//   console.log(lossLandscapeData1, lossLandscapeData2)
+//   return 214
+// })
 
 /**
  * Persistence Barcode Data
  */
 
-export const persistenceBarcodeDataAtom = atom<
-  PersistenceBarcode | Promise<PersistenceBarcode> | null
->(null)
+type PersistenceBarcodeDataAtomType = {
+  [key: string]: PersistenceBarcode | Promise<PersistenceBarcode> | null
+}
+
+export const persistenceBarcodeDataAtom = atom<PersistenceBarcodeDataAtomType>(
+  {}
+)
 
 export const loadPersistenceBarcodeDataAtom = atom(
   async (get) => get(persistenceBarcodeDataAtom),
-  async (get, set, modelId: string, modeId: string) => {
+  async (get, set, modelIdModeId: string) => {
     const selectedCaseStudy = get(selectedCaseStudyAtom)
-    if (!selectedCaseStudy) return
+    const persistenceBarcodeData = get(persistenceBarcodeDataAtom)
+    if (!selectedCaseStudy || modelIdModeId === "") return
     const promise = fetchPersistenceBarcodeData(
       selectedCaseStudy,
-      modelId,
-      modeId
+      modelIdModeId
     ).then((data: PersistenceBarcode) => {
       return data
     })
-    set(persistenceBarcodeDataAtom, promise)
+    persistenceBarcodeData[modelIdModeId] = promise
+    set(persistenceBarcodeDataAtom, persistenceBarcodeData)
   }
 )
 
-export const persistenceBarcodeData2Atom = atom<
-  PersistenceBarcode | Promise<PersistenceBarcode> | null
->(null)
+// to delete
+// export const persistenceBarcodeData2Atom = atom<
+//   PersistenceBarcode | Promise<PersistenceBarcode> | null
+// >(null)
+//
+// export const loadPersistenceBarcodeData2Atom = atom(
+//   async (get) => get(persistenceBarcodeData2Atom),
+//   async (get, set, modelIdModeId: string) => {
+//     const selectedCaseStudy = get(selectedCaseStudyAtom)
+//     if (!selectedCaseStudy) return
+//     const promise = fetchPersistenceBarcodeData(
+//       selectedCaseStudy,
+//       modelIdModeId
+//     ).then((data: PersistenceBarcode) => {
+//       return data
+//     })
+//     set(persistenceBarcodeData2Atom, promise)
+//   }
+// )
 
-export const loadPersistenceBarcodeData2Atom = atom(
-  async (get) => get(persistenceBarcodeData2Atom),
-  async (get, set, modelId: string, modeId: string) => {
-    const selectedCaseStudy = get(selectedCaseStudyAtom)
-    if (!selectedCaseStudy) return
-    const promise = fetchPersistenceBarcodeData(
-      selectedCaseStudy,
-      modelId,
-      modeId
-    ).then((data: PersistenceBarcode) => {
-      return data
-    })
-    set(persistenceBarcodeData2Atom, promise)
-  }
-)
 /**
  * Merge Tree Data
  */
 
-export const mergeTreeDataAtom = atom<
-  MergeTreeData | Promise<MergeTreeData> | null
->(null)
+type MergeTreeDataAtomType = {
+  [key: string]: MergeTreeData | Promise<MergeTreeData> | null
+}
+export const mergeTreeDataAtom = atom<MergeTreeDataAtomType>({})
 
 export const loadMergeTreeDataAtom = atom(
   async (get) => get(mergeTreeDataAtom),
-  async (get, set, modelId: string, modeId: string) => {
+  async (get, set, modelIdModeId: string) => {
     const selectedCaseStudy = get(selectedCaseStudyAtom)
-    if (!selectedCaseStudy) return
-    const promise = fetchMergeTreeData(selectedCaseStudy, modelId, modeId).then(
+    const mergeTreeData = get(mergeTreeDataAtom)
+    if (!selectedCaseStudy || modelIdModeId === "") return
+    const promise = fetchMergeTreeData(selectedCaseStudy, modelIdModeId).then(
       (data: MergeTreeData) => {
         return data
       }
     )
-    set(mergeTreeDataAtom, promise)
+    mergeTreeData[modelIdModeId] = promise
+    set(mergeTreeDataAtom, mergeTreeData)
   }
 )
 
-export const mergeTreeData2Atom = atom<
-  MergeTreeData | Promise<MergeTreeData> | null
->(null)
+// to delete
+// export const mergeTreeData2Atom = atom<
+//   MergeTreeData | Promise<MergeTreeData> | null
+// >(null)
+//
+// export const loadMergeTreeData2Atom = atom(
+//   async (get) => get(mergeTreeData2Atom),
+//   async (get, set, modelIdModeId: string) => {
+//     const selectedCaseStudy = get(selectedCaseStudyAtom)
+//     if (!selectedCaseStudy) return
+//     const promise = fetchMergeTreeData(selectedCaseStudy, modelIdModeId).then(
+//       (data: MergeTreeData) => {
+//         return data
+//       }
+//     )
+//     set(mergeTreeData2Atom, promise)
+//   }
+// )
 
-export const loadMergeTreeData2Atom = atom(
-  async (get) => get(mergeTreeData2Atom),
-  async (get, set, modelId: string, modeId: string) => {
-    const selectedCaseStudy = get(selectedCaseStudyAtom)
-    if (!selectedCaseStudy) return
-    const promise = fetchMergeTreeData(selectedCaseStudy, modelId, modeId).then(
-      (data: MergeTreeData) => {
-        return data
-      }
-    )
-    set(mergeTreeData2Atom, promise)
-  }
-)
 /**
  * Layer Similarity data
  */
@@ -305,7 +338,7 @@ export const loadLayerSimilarityDataAtom = atom(
   async (get, set) => {
     const selectedModeIdList = get(selectedModeIdListAtom)
     const selectedCaseStudy = get(selectedCaseStudyAtom)
-    if (!selectedCaseStudy || selectedModeIdList.length < 2) return
+    if (!selectedCaseStudy || selectedModeIdList.includes("")) return
     const promise = fetchLayerSimilarityData(
       selectedCaseStudy,
       selectedModeIdList

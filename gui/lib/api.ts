@@ -7,40 +7,42 @@ export const fetchSemiGlobalLocalStructureData = async (id: string) => {
   return await response.data
 }
 
-export const fetchModelMetaDataList = async (id: string) => {
+export const fetchModelMetaDataList = async (id: string | null) => {
+  if (id === null) {
+    return
+  }
   const response = await axios.get(`api/model-metadata?id=${id}`)
   return await response.data
 }
 
 export const fetchLossLandscapeData = async (
-  id: string,
-  modelId: string,
-  modeId: string
+  id: string | null,
+  modelIdModeId: string
 ) => {
+  if (id === null) return
+  console.log("fetchLossLandscapeData", id, modelIdModeId)
   const response = await axios.get(
-    `api/loss-landscape-data?id=${id}&modelId=${modelId}&modeId=${modeId}`
+    `api/loss-landscape-data?id=${id}&modelIdModeId=${modelIdModeId}`
   )
   return await response.data
 }
 
 export const fetchPersistenceBarcodeData = async (
-  id: string,
-  modelId: string,
-  modeId: string
+  id: string | null,
+  modelIdModeId: string
 ) => {
   const response = await axios.get(
-    `api/persistence-barcode-data?id=${id}&modelId=${modelId}&modeId=${modeId}`
+    `api/persistence-barcode-data?id=${id}&modelIdModeId=${modelIdModeId}`
   )
   return await response.data
 }
 
 export const fetchMergeTreeData = async (
-  id: string,
-  modelId: string,
-  modeId: string
+  id: string | null,
+  modelIdModeId: string
 ) => {
   const response = await axios.get(
-    `api/merge-tree-data?id=${id}&modelId=${modelId}&modeId=${modeId}`
+    `api/merge-tree-data?id=${id}&modelIdModeId=${modelIdModeId}`
   )
   return await response.data
 }

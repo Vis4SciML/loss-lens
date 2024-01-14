@@ -5,7 +5,6 @@ import * as d3 from "d3"
 
 import {
   ModeConnectivityLink,
-  ModelUI,
   ModeNode,
   SemiGlobalLocalStructure,
 } from "@/types/losslens"
@@ -19,18 +18,18 @@ interface SemiGlobalLocalCoreProp {
   data: SemiGlobalLocalStructure
   height: number
   width: number
-  updateSelectedModelIdModeId: (id: string) => void
-  modelUIList: ModelUI[]
-  modelUI: ModelUI
+  updateSelectedModelIdModeId: (index: number, id: string) => void
+  modelId: string
+  modelIdIndex: number
 }
 
 function render(
   svgRef: React.RefObject<SVGSVGElement>,
   wraperRef: React.RefObject<HTMLDivElement>,
   data: SemiGlobalLocalStructure,
-  updateSelectedModelIdModeId: (id: string) => void,
-  modelUIList: ModelUI[],
-  modelUI: ModelUI
+  updateSelectedModelIdModeId: (index: number, id: string) => void,
+  modelId: string,
+  modelIdIndex: number
 ) {
   const divElement = wraperRef.current
   const width = divElement.clientWidth
@@ -93,12 +92,10 @@ function render(
   // })
 
   const links = wholeLinks.filter(
-    (link) =>
-      link.source.modelId === modelUI.modelId &&
-      link.target.modelId === modelUI.modelId
+    (link) => link.source.modelId === modelId && link.target.modelId === modelId
   )
 
-  const nodes = wholeNodes.filter((node) => node.modelId === modelUI.modelId)
+  const nodes = wholeNodes.filter((node) => node.modelId === modelId)
 
   function positionNode(d: ModeNode) {
     return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")"
@@ -502,7 +499,7 @@ function render(
         .attr("stroke-width", 4)
         .attr("stroke", (d) => modelColorMap[d.modelId])
         .style("cursor", "pointer")
-      updateSelectedModelIdModeId(d.modelId + "-" + d.modeId)
+      updateSelectedModelIdModeId(modelIdIndex, d.modelId + "-" + d.modeId)
     })
 
   // Zooming
@@ -540,8 +537,8 @@ export default function SemiGlobalLocalCore({
   height,
   data,
   updateSelectedModelIdModeId,
-  modelUIList,
-  modelUI,
+  modelId,
+  modelIdIndex,
 }: SemiGlobalLocalCoreProp): React.JSX.Element {
   // NOTE: modelUIList is no longer useful
   const svg = React.useRef<SVGSVGElement>(null)
@@ -575,10 +572,10 @@ export default function SemiGlobalLocalCore({
       wraperRef,
       clonedData,
       updateSelectedModelIdModeId,
-      modelUIList,
-      modelUI
+      modelId,
+      modelIdIndex
     )
-  }, [data, width, height, updateSelectedModelIdModeId, modelUIList, modelUI])
+  }, [data, width, height, updateSelectedModelIdModeId, modelId, modelIdIndex])
 
   return (
     <div ref={wraperRef} className="h-full w-full rounded border">

@@ -53,6 +53,19 @@ export interface ModelMetaData {
   numberOfModes: number
 }
 
+export function isModelMetaData(obj: any): obj is ModelMetaData {
+  return (
+    obj &&
+    obj.modelId &&
+    obj.modelName &&
+    obj.modelDescription &&
+    obj.modelDataset &&
+    obj.datasetId &&
+    obj.modelDatasetDescription &&
+    obj.numberOfModes
+  )
+}
+
 export interface GlobalInfo {
   lossBounds: {
     upperBound: number
@@ -69,6 +82,18 @@ export interface LossLandscape {
   lowerBound: number
 }
 
+export function isLossLandscapeType(obj: any): obj is LossLandscape {
+  return (
+    obj &&
+    obj.caseId &&
+    obj.modelId &&
+    obj.modeId &&
+    obj.grid &&
+    obj.upperBound &&
+    obj.lowerBound
+  )
+}
+
 export interface PersistenceBarcode {
   caseId: string
   modelId: string
@@ -78,6 +103,10 @@ export interface PersistenceBarcode {
     y0: number
     x: number
   }>
+}
+
+export function isPersistenceBarcodeType(obj: any): obj is PersistenceBarcode {
+  return obj && obj.caseId && obj.modelId && obj.modeId && obj.edges
 }
 
 export interface MergeTreeData {
@@ -93,6 +122,10 @@ export interface MergeTreeData {
     targetX: number
     targetY: number
   }>
+}
+
+export function isMergeTreeDataType(obj: any): obj is MergeTreeData {
+  return obj && obj.modeId && obj.nodes && obj.edges
 }
 
 export interface LayerSimilarityData {
