@@ -71,7 +71,7 @@ export default function IndexPage() {
         <div className="mr-4 hidden font-serif text-3xl font-extrabold sm:inline-block">
           {siteConfig.name}
         </div>
-        <div className="w-40">
+        <div className="w-40 pt-2">
           <Select
             onValueChange={(value: string) => {
               setSelectedCaseStudyUI(value)
@@ -85,9 +85,11 @@ export default function IndexPage() {
             </SelectContent>
           </Select>
         </div>
-        <Button size={"xs"} variant="ghost" onClick={handleClick}>
-          <Icons.play className="h-5 w-5" />
-        </Button>
+        <div className="pt-2">
+          <Button size={"xs"} variant="ghost" onClick={handleClick}>
+            <Icons.play className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
       <div className="grid grid-cols-12">
         <div className="col-span-8 h-[calc(100vh-4rem)]">

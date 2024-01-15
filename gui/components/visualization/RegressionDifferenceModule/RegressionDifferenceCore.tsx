@@ -24,7 +24,6 @@ function splitStringAtMiddleUnderscore(str) {
   }
 
   const middleUnderscoreIndex = Math.floor(underscoreCount / 2)
-  const underscores = str.match(/_/g)
   let underscorePosition = -1
 
   for (let i = 0; i <= middleUnderscoreIndex; i++) {
@@ -50,10 +49,10 @@ function render(
   const width = divElement?.clientWidth
   const height = divElement?.clientHeight
   const margin = {
-    top: 50,
-    right: 10,
-    bottom: 40,
-    left: 40,
+    top: 80,
+    right: 85,
+    bottom: 120,
+    left: 85,
   }
   const h = height - margin.top - margin.bottom
   const w = width - margin.left - margin.right
@@ -63,9 +62,6 @@ function render(
     .attr("height", height)
     .select("g")
     .attr("transform", `translate(${margin.left},${margin.top})`)
-
-  console.log("RegressionDifferenceCore.tsx")
-  console.log(data)
 
   const dataA = data.grid["a"]
   const dataB = data.grid["b"]
@@ -160,7 +156,7 @@ function render(
     .attr("class", "axisLabel font-serif")
     .attr("x", 0)
     .attr("y", -10)
-    .attr("text-anchor", "middle")
+    .attr("text-anchor", "end")
     .attr("font-size", "0.9rem")
     .text("Predicted")
     .attr("fill", regressionDifferenceColor.textColor)
@@ -182,10 +178,11 @@ function render(
     .join("g")
     .attr("class", "legendgroup")
     .attr("transform", (d, i) => {
-      if (d === 0 || d === 1) {
-        return `translate(${0},${h + 70 + i * 35})`
+      const gap = width / 2
+      if (d === 0 || d === 1 || d === 2) {
+        return `translate(${-10 + i * gap},${-60})`
       } else {
-        return `translate(${0 * 135},${h + 100})`
+        return `translate(${-10},${-60})`
       }
     })
 
@@ -231,7 +228,7 @@ function render(
     .join("text")
     .attr("class", "figure-label font-serif")
     .attr("x", w / 2)
-    .attr("y", -30)
+    .attr("y", h + 60)
     .attr("font-size", "1rem")
     .attr("font-weight", "semi-bold")
     .attr("text-anchor", "middle")

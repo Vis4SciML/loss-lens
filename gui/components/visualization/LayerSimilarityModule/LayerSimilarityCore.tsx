@@ -31,20 +31,53 @@ function render(
   // xCheckBoxItems: string[],
   // yCheckBoxItems: string[]
 ) {
+  console.log("rendering layer similarity")
+  console.log(data)
   //get the max length of the label
   const maxLength = Math.max(
     ...data.xLabels.map((d) => d.length),
     ...data.yLabels.map((d) => d.length)
   )
+
+  const inputString = data.modePairId
+  let count = 0
+
+  for (let i = 0; i < inputString.length; i++) {
+    if (inputString[i] === "_") {
+      count++
+    }
+  }
+
+  let middleUnderscore = Math.ceil(count / 2)
+  let indexOfMiddleUnderscore = -1
+  for (let i = 0; i <= inputString.length; i++) {
+    if (inputString[i] === "_") {
+      middleUnderscore--
+    }
+    if (middleUnderscore === 0) {
+      indexOfMiddleUnderscore = i
+      break
+    }
+  }
+
+  // Split the string into two parts based on the middle underscore
+  let firstHalf = inputString.substring(0, indexOfMiddleUnderscore)
+  let secondHalf = inputString.substring(indexOfMiddleUnderscore + 1)
+
+  console.log("First Half:", firstHalf)
+  console.log("Second Half:", secondHalf)
+
+  const xLabel = firstHalf + " Layers"
+  const yLabel = secondHalf + " Layers"
   const divElement = wrapperRef.current
   const width = divElement?.clientWidth
   const height = divElement?.clientHeight
 
   const margin = {
-    top: 30,
-    right: width * 0.3,
-    bottom: width * 0.3,
-    left: 10,
+    top: 80,
+    right: 85,
+    bottom: 90,
+    left: 85,
   }
   const h = height - margin.top - margin.bottom
   const w = width - margin.left - margin.right
@@ -150,18 +183,19 @@ function render(
     .style("stop-color", (d) => d)
     .style("stop-opacity", 1)
 
+  const leftOffset = 100
   legend
     .join("rect")
     .attr("class", "legend")
-    .attr("y", height - 60)
-    .attr("x", 0)
+    .attr("y", h + 10)
+    .attr("x", leftOffset)
     .attr("height", 10)
-    .attr("width", width)
+    .attr("width", w - leftOffset)
     .attr("fill", "url(#layersim)")
 
   const legendScale = d3
     .scaleLinear()
-    .range([0, width])
+    .range([leftOffset, w])
     .domain([lowerBound, upperBound])
 
   const legendAxis = svg.selectAll(".legendAxis").data([data])
@@ -169,7 +203,7 @@ function render(
   legendAxis
     .join("g")
     .attr("class", "legendAxis")
-    .attr("transform", `translate(0, ${height - 50})`)
+    .attr("transform", `translate(0, ${h + 20})`)
     .call(d3.axisBottom(legendScale))
 
   legendAxis.select(".domain").attr("display", "none")
@@ -182,66 +216,42 @@ function render(
 
   const xAxis = svg.selectAll(".xAxis").data([data])
 
-  // xAxis
-  //   .join("g")
-  //   .attr("class", "xAxis")
-  //   .attr("transform", `translate(0, ${h})`)
-  //   .call(
-  //     d3.axisBottom(xScale).tickFormat((d, i) => {
-  //       if (xLabels.length < 20) {
-  //         return formatString(xLabels[i], 100)
-  //       } else if (xLabels.length < 50) {
-  //         if (i % 3 === 0) {
-  //           return formatString(xLabels[i], 100)
-  //         } else {
-  //           return ""
-  //         }
-  //       } else {
-  //         if (i % 10 === 0) {
-  //           return formatString(xLabels[i], 100)
-  //         } else {
-  //           return ""
-  //         }
-  //       }
-  //     })
-  //   )
-  //   .selectAll(".tick text")
-  //   .attr("font-size", "0.9rem")
-  //   .attr("class", "font-serif")
-  //   .attr("fill", "#000")
-  //   .attr("text-anchor", "end")
-  //   .attr("transform", `rotate(-90) translate(-10, -${xScale.bandwidth() / 2})`)
+  xAxis
+    .join("g")
+    .attr("class", "xAxis")
+    .attr("transform", `translate(0, 0)`)
+    .call(
+      d3.axisTop(xScale).tickValues(
+        xScale.domain().filter(function (_d, i) {
+          return i % 10 === 0
+        })
+      )
+    )
+    .selectAll(".tick text")
+    .attr("font-size", "0.9rem")
+    .attr("class", "font-serif")
+    .attr("fill", "#000")
+  // .attr("text-anchor", "end")
+  // .attr("transform", `rotate(-90) translate(-10, -${xScale.bandwidth() / 2})`)
   // xAxis.select(".domain").attr("display", "none")
   // xAxis.selectAll(".tick line").attr("display", "none")
 
-  // const yAxis = svg.selectAll(".yAxis").data([data])
-  // yAxis
-  //   .join("g")
-  //   .attr("class", "yAxis")
-  //   .attr("transform", `translate(${w}, 0)`)
-  //   .call(
-  //     d3.axisRight(yScale).tickFormat((d, i) => {
-  //       if (yLabels.length < 20) {
-  //         return formatString(yLabels[i], 100)
-  //       } else if (yLabels.length < 50) {
-  //         if (i % 3 === 0) {
-  //           return formatString(yLabels[i], 100)
-  //         } else {
-  //           return ""
-  //         }
-  //       } else {
-  //         if (i % 10 === 0) {
-  //           return formatString(yLabels[i], 100)
-  //         } else {
-  //           return ""
-  //         }
-  //       }
-  //     })
-  //   )
-  //   .selectAll(".tick text")
-  //   .attr("font-size", "0.9rem")
-  //   .attr("class", "font-serif")
-  //   .attr("fill", "#000")
+  const yAxis = svg.selectAll(".yAxis").data([data])
+  yAxis
+    .join("g")
+    .attr("class", "yAxis")
+    .attr("transform", `translate(0, 0)`)
+    .call(
+      d3.axisLeft(yScale).tickValues(
+        xScale.domain().filter(function (_d, i) {
+          return i % 10 === 0
+        })
+      )
+    )
+    .selectAll(".tick text")
+    .attr("font-size", "0.9rem")
+    .attr("class", "font-serif")
+    .attr("fill", "#000")
   // yAxis.select(".domain").attr("display", "none")
   // yAxis.selectAll(".tick line").attr("display", "none")
 
@@ -250,9 +260,10 @@ function render(
     .data([1])
     .join("text")
     .attr("class", "legendLabel font-serif")
-    .attr("x", width - 60)
-    .attr("y", -20)
+    .attr("x", 0)
+    .attr("y", 0)
     .attr("font-size", "0.9rem")
+    .attr("text-anchor", "start")
     .attr("fill", "#000")
     .text("CKA Similarity")
 
@@ -262,20 +273,47 @@ function render(
     .join("text")
     .attr("class", "figure-label font-serif")
     .attr("x", w / 2)
-    .attr("y", -10)
+    .attr("y", h + 60)
     .attr("font-size", "1rem")
     .attr("font-weight", "semi-bold")
-    .attr("text-anchor", "start ")
+    .attr("text-anchor", "middle ")
     .attr("fill", "#000")
     .text("Layer Similarity View")
+
+  svg
+    .selectAll(".xLabel")
+    .data([1])
+    .join("text")
+    .attr("class", "xLabel font-serif")
+    .attr("x", w / 2)
+    .attr("y", -40)
+    .attr("font-size", "0.9rem")
+    .attr("font-weight", "semi-bold")
+    .attr("text-anchor", "middle ")
+    .attr("fill", "#000")
+    .text(xLabel)
+
+  svg
+    .selectAll(".yLabel")
+    .data([1])
+    .join("text")
+    .attr("class", "yLabel font-serif")
+    .attr("x", -h / 2)
+    .attr("y", -50)
+    .attr("font-size", "0.9rem")
+    .attr("font-weight", "semi-bold")
+    .attr("text-anchor", "middle ")
+    .attr("fill", "#000")
+    .attr("transform", `rotate(-90)`)
+    .text(yLabel)
 }
 
 export default function LayerSimilarityCore({
   width,
   height,
   data, // xCheckBoxItems,
-} // yCheckBoxItems,
-: LayerSimilarityCoreProp): React.JSX.Element {
+  // yCheckBoxItems,
+}: LayerSimilarityCoreProp): React.JSX.Element {
   const svg = React.useRef<SVGSVGElement>(null)
   const wrapperRef = React.useRef<HTMLDivElement>(null)
 

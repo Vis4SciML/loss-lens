@@ -1,6 +1,5 @@
 "use client"
 
-import { Suspense, useEffect } from "react"
 import { useAtom } from "jotai"
 
 import {

@@ -1,13 +1,8 @@
 "use client"
 
-import { useEffect } from "react"
 import { useAtom } from "jotai"
 
-import {
-  loadableRegressionDifferenceDataAtom,
-  loadRegressionDifferenceDataAtom,
-  systemConfigAtom,
-} from "@/lib/store"
+import { loadableRegressionDifferenceDataAtom } from "@/lib/store"
 
 import RegressionDifferenceCore from "./RegressionDifferenceCore"
 

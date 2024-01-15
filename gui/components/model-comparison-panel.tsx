@@ -1,4 +1,3 @@
-import { Play } from "next/font/google"
 import { useAtom } from "jotai"
 
 import {
@@ -22,32 +21,34 @@ export default function ModelComparisonPanel({ height, width }) {
   ) {
     return (
       <div className="col-span-4 h-[calc(100vh-4rem)]">
-        <div className="flex h-[calc(5vh)] items-center justify-center font-serif text-lg ">
-          Mode Comparison
+        <div className="grid grid-cols-4">
+          <div className="col-span-3">
+            <div className="h-[calc(26.5vh)]"></div>
+            <div className="aspect-square"></div>
+          </div>
+          <div className="col-span-1 flex h-[calc(100vh-5rem)] items-center justify-center font-serif text-lg ">
+            <div>Model Comparison</div>
+          </div>
         </div>
-        <div className="h-[calc(26.5vh)]"></div>
-        <div className="aspect-square"></div>
       </div>
     )
   } else {
     let predictionComparison = null
     if (selectedCaseStudy === "pinn") {
       predictionComparison = (
-        <div className="h-[calc(26.5vh)] ">
+        <div className="aspect-square ">
           <RegressionDifferenceModule
             height={canvasHeight / 2}
             width={canvasWidth / 2}
-            modelIdModeIds={selectedCheckpointIdList}
           />
         </div>
       )
     } else {
       predictionComparison = (
-        <div className="h-[calc(26.5vh)] w-full ">
+        <div className="aspect-square ">
           <ConfusionMatrixBarModule
             height={canvasHeight / 2}
             width={canvasWidth / 2}
-            modelIdModeIds={selectedCheckpointIdList}
           />
         </div>
       )
@@ -65,11 +66,15 @@ export default function ModelComparisonPanel({ height, width }) {
 
     return (
       <div className="col-span-4 h-[calc(100vh-4rem)]">
-        <div className="flex h-[calc(5vh)] items-center justify-center font-serif text-lg ">
-          Mode Comparison
+        <div className="grid grid-cols-4 p-1">
+          <div className="col-span-3 flex flex-col justify-around rounded border">
+            {predictionComparison}
+            {similarityPerdictions}
+          </div>
+          <div className="col-span-1 flex h-[calc(100vh-5rem)] items-center justify-center font-serif text-lg ">
+            <div>Model Comparison</div>
+          </div>
         </div>
-        {predictionComparison}
-        {similarityPerdictions}
       </div>
     )
   }
