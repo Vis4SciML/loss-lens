@@ -3,11 +3,7 @@
 import * as React from "react"
 import * as d3 from "d3"
 
-import {
-  LossLandscape,
-  MergeTreeData,
-  PersistenceBarcode,
-} from "@/types/losslens"
+import { MergeTreeData } from "@/types/losslens"
 import { mergeTreeColor } from "@/styles/vis-color-scheme"
 
 interface MergeTreeCoreProp {
@@ -24,11 +20,12 @@ function render(
   const divElement = wraperRef.current
   const width = divElement.clientWidth
   const height = divElement.clientHeight
+
   const margin = {
-    top: 40,
-    right: 60,
-    bottom: Math.abs(height - width) - 10,
-    left: 60,
+    top: 25,
+    right: 40,
+    bottom: Math.abs(height - width) - 5,
+    left: 40,
   }
   const h = height - margin.top - margin.bottom
   const w = width - margin.left - margin.right
@@ -100,11 +97,11 @@ function render(
     .data([1])
     .join("text")
     .attr("class", "figure-label font-serif")
-    .attr("x", 0)
-    .attr("y", -45)
+    .attr("x", w / 2)
+    .attr("y", h + 45)
     .attr("font-size", "1rem")
     .attr("font-weight", "semi-bold")
-    .attr("text-anchor", "start")
+    .attr("text-anchor", "middle")
     .attr("fill", "#000")
     .text("Merge Tree [" + data.modeId + "]")
 }

@@ -17,19 +17,14 @@ function render(
   svgRef: React.RefObject<SVGSVGElement>,
   wraperRef: React.RefObject<HTMLDivElement>,
   data: LossLandscape,
-  // width: number,
-  // height: number,
   globalInfo: GlobalInfo
 ) {
   const divElement = wraperRef.current
   const width = divElement?.clientWidth ?? 300
   const height = divElement?.clientHeight ?? 300
 
-  console.log("render")
-  console.log(data)
-
   const margin = {
-    top: 25,
+    top: 30,
     right: 0,
     bottom: Math.abs(height - width) - 5,
     left: 20,
@@ -40,8 +35,6 @@ function render(
   const upperBound = globalInfo.lossBounds.upperBound
   const lowerBound = globalInfo.lossBounds.lowerBound
 
-  // const upperBound = d3.max(data.grid, (d) => d3.max(d))
-  // const lowerBound = d3.min(data.grid, (d) => d3.min(d))
   const svg = d3
     .select(svgRef.current)
     .attr("width", width)
@@ -60,8 +53,8 @@ function render(
   // const m = Math.ceil((y1 - y0) / q)
 
   const thresholdArray = []
-  for (let i = 0; i < 15; i++) {
-    const threshold = lowerBound + (i / 14) * (upperBound - lowerBound)
+  for (let i = 0; i < 40; i++) {
+    const threshold = lowerBound + (i / 39) * (upperBound - lowerBound)
     thresholdArray.push(threshold)
   }
 
@@ -104,9 +97,6 @@ function render(
     .thresholds(thresholdArray)(data.grid.flat())
     .map(transform)
 
-  console.log("Contours")
-  console.log(contours)
-
   svg
     .selectAll("path")
     .data(contours)
@@ -136,16 +126,16 @@ function render(
   legend
     .join("rect")
     .attr("class", "legend")
-    .attr("y", height - 55)
+    .attr("y", h + 3)
     .attr("x", 40)
     .attr("height", 7)
-    .attr("width", w - 40)
+    .attr("width", w - 45)
     .attr("stroke", "#666")
     .attr("fill", "url(#lossgrad)")
 
   const legendScale = d3
     .scaleLinear()
-    .range([0, w - 40])
+    .range([0, w - 45])
     .domain([lowerBound, upperBound])
 
   const legendAxis = svg.selectAll(".legendAxis").data([data])
@@ -153,7 +143,7 @@ function render(
   legendAxis
     .join("g")
     .attr("class", "legendAxis")
-    .attr("transform", `translate(40, ${height - 48})`)
+    .attr("transform", `translate(40, ${h + 10})`)
     .call(d3.axisBottom(legendScale).ticks(4).tickFormat(d3.format(".2s")))
 
   // legendAxis.select(".domain").attr("display", "none")
@@ -182,11 +172,11 @@ function render(
     .data([1])
     .join("text")
     .attr("class", "figure-label font-serif")
-    .attr("x", 0)
-    .attr("y", -10)
+    .attr("x", w / 2)
+    .attr("y", h + 45)
     .attr("font-size", "1rem")
     .attr("font-weight", "semi-bold")
-    .attr("text-anchor", "start")
+    .attr("text-anchor", "middle")
     .text("Loss Contour [" + data.modeId + "]")
 }
 

@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import { useAtom } from "jotai"
 
 import { modelIDLoadableAtom } from "@/lib/store"
@@ -20,7 +19,7 @@ export default function ModelCardList() {
       console.log(modelMetaDataLoader)
       const modelMetaDataList = modelMetaDataLoader.data
       if (!modelMetaDataList) {
-        return
+        return <div className={" h-[900px] w-full text-center "}>Empty</div>
       }
       const modelCards = modelMetaDataList.data.map((model, index) => {
         const modelDescriptionUI = model.modelDescription

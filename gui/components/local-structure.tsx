@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import { useAtom } from "jotai"
 
 import { selectedCheckPointIdListAtom } from "@/lib/store"
@@ -48,7 +47,7 @@ export default function LocalStructure({ height, width }: LocalStructureProps) {
             </div>
             <div className="col-span-1 h-full">
               <MergeTreeModule
-                height={canvasHeight / 2}
+                height={canvasHeight / 4}
                 width={canvasWidth / 4}
                 checkpointId={checkPointId}
               />

@@ -3,7 +3,7 @@
 import * as React from "react"
 import * as d3 from "d3"
 
-import { LossLandscape, PersistenceBarcode } from "@/types/losslens"
+import { PersistenceBarcode } from "@/types/losslens"
 import { persistenceBarcodeColor } from "@/styles/vis-color-scheme"
 
 interface PersistenceBarcodeCoreProp {
@@ -21,9 +21,9 @@ function render(
   const width = divElement?.clientWidth
   const height = divElement?.clientHeight
   const margin = {
-    top: 40,
-    right: 10,
-    bottom: Math.abs(height - width) - 10,
+    top: 25,
+    right: 0,
+    bottom: Math.abs(height - width) - 5,
     left: 20,
   }
   const h = height - margin.top - margin.bottom
@@ -125,8 +125,8 @@ function render(
     .attr("class", "ylabel font-serif")
     .text("Birth")
     .attr("x", w / 2)
-    .attr("y", h + 15)
-    .attr("text-anchor", "mid")
+    .attr("y", h + 20)
+    .attr("text-anchor", "middle")
     .style("font-size", "1rem")
     .style("fill", "#000")
 
@@ -142,14 +142,14 @@ function render(
     .data([1])
     .join("text")
     .attr("class", "figure-label font-serif")
-    .attr("x", 0)
-    .attr("y", -10)
+    .attr("x", w / 2)
+    .attr("y", h + 45)
     .attr("text-align", "center")
     .attr("font-size", "1rem")
     .attr("font-weight", "semi-bold")
-    .attr("text-anchor", "start ")
+    .attr("text-anchor", "middle ")
     .attr("fill", "#000")
-    .text("P.B. [" + data.modeId + "]")
+    .text("Persistence Barcode [" + data.modeId + "]")
 }
 
 export default function PersistenceBarcodeCore({

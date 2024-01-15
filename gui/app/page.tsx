@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { atom, useAtom } from "jotai"
 
 import { siteConfig } from "@/config/site"
@@ -14,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Icons } from "@/components/icons"
-import Loader from "@/components/loader"
 import LocalStructure from "@/components/local-structure"
 import ModelCardList from "@/components/model-card-list"
 import ModelComparisonPanel from "@/components/model-comparison-panel"
@@ -93,14 +92,10 @@ export default function IndexPage() {
       <div className="grid grid-cols-12">
         <div className="col-span-8 h-[calc(100vh-4rem)]">
           <SemiGlobalLocalModule height={height} width={(width * 4) / 9} />
-          <Suspense fallback={<Loader />}>
-            <ModelCardList />
-          </Suspense>
+          <ModelCardList />
           <LocalStructure height={400} width={400} />
         </div>
-        <Suspense fallback={<Loader />}>
-          <ModelComparisonPanel height={height} width={(width * 4) / 9} />
-        </Suspense>
+        <ModelComparisonPanel height={height} width={(width * 4) / 9} />
       </div>
     </section>
   )
