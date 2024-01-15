@@ -36,7 +36,10 @@ export default function ModelCardList() {
         return (
           <div className="col-span-5 h-full p-2">
             <div className="flex justify-start">
-              <div className="col-span-1 flex justify-end px-2 py-1">
+              <div className="font-serif text-xl font-semibold">
+                <span>{model.modelName}</span>
+              </div>
+              <div className="p-1">
                 <svg width={20} height={20}>
                   <circle
                     fill={modelColor[index]}
@@ -46,25 +49,20 @@ export default function ModelCardList() {
                   ></circle>
                 </svg>
               </div>
-              <div>
-                <div className="font-serif text-xl font-semibold">
-                  {model.modelName}
-                </div>
-                <Label className="font-serif text-lg font-semibold">
-                  {" "}
-                  Model Info
-                </Label>
-                <div className="font-serif">{modelDescriptionUI}</div>
-                {datasetDescriptionUI && (
-                  <>
-                    <Label className="font-serif text-lg font-semibold">
-                      Dataset:
-                    </Label>
-                    <div className="font-serif">{datasetDescriptionUI}</div>
-                  </>
-                )}
-              </div>
             </div>
+            <Label className="font-serif text-lg font-semibold">
+              {" "}
+              Model Info
+            </Label>
+            <div className="font-serif">{modelDescriptionUI}</div>
+            {datasetDescriptionUI && (
+              <>
+                <Label className="font-serif text-lg font-semibold">
+                  Dataset:
+                </Label>
+                <div className="font-serif">{datasetDescriptionUI}</div>
+              </>
+            )}
           </div>
         )
       })
