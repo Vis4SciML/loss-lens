@@ -35,7 +35,7 @@ export default function PersistenceBarcode({
     if (persistenceBarcodeDataLoader.data === null) {
       return (
         <div className={" h-[900px] w-full bg-gray-100 text-center "}>
-          Empty
+          persistence barcode Empty
         </div>
       )
     } else {

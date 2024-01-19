@@ -32,7 +32,7 @@ export default function MergeTree({
     if (mergeTreeDataLoader.data === null) {
       return (
         <div className={" h-[900px] w-full bg-gray-100 text-center "}>
-          Empty
+          Merge Tree Empty
         </div>
       )
     } else {

@@ -40,14 +40,12 @@ export default function LossLandscape({
       lossLandscapeDataLoader.data === null ||
       globalInfoLoader.data === null
     ) {
-      console.log("LossLandscape data not obtained")
-      console.log(lossLandscapeDataLoader.data)
-      console.log(globalInfoLoader.data)
-      return <div className={" h-[900px] w-full text-center "}>Empty</div>
+      return (
+        <div className={" h-[900px] w-full text-center "}>
+          LossContour is empty
+        </div>
+      )
     } else {
-      console.log("LossLandscape data obtained")
-      console.log(lossLandscapeDataLoader.data)
-      console.log(globalInfoLoader.data)
       return (
         <LossContourCore
           height={height}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import dynamic from "next/dynamic"
 import { atom, useAtom } from "jotai"
 
 import { siteConfig } from "@/config/site"
@@ -18,6 +19,26 @@ import LocalStructure from "@/components/local-structure"
 import ModelCardList from "@/components/model-card-list"
 import ModelComparisonPanel from "@/components/model-comparison-panel"
 import SemiGlobalLocalModule from "@/components/visualization/SemiGlobalLocalModule"
+
+const SemiGlobalLocalModuleNoSSR = dynamic(
+  () => import("@/components/visualization/SemiGlobalLocalModule"),
+  { ssr: false }
+)
+
+const LocalStructureNoSSR = dynamic(
+  () => import("@/components/local-structure"),
+  { ssr: false }
+)
+
+const ModelCardListNoSSR = dynamic(
+  () => import("@/components/model-card-list"),
+  { ssr: false }
+)
+
+const ModelComparisonPanelNoSSR = dynamic(
+  () => import("@/components/model-comparison-panel"),
+  { ssr: false }
+)
 
 type WindowDimentions = {
   width: number | undefined
@@ -93,11 +114,11 @@ export default function IndexPage() {
       </div>
       <div className="grid grid-cols-12">
         <div className="col-span-8 h-[calc(100vh-4rem)]">
-          <SemiGlobalLocalModule height={height} width={(width * 4) / 9} />
-          <ModelCardList />
-          <LocalStructure height={400} width={400} />
+          <SemiGlobalLocalModuleNoSSR height={height} width={(width * 4) / 9} />
+          <ModelCardListNoSSR />
+          <LocalStructureNoSSR height={400} width={400} />
         </div>
-        <ModelComparisonPanel height={height} width={(width * 4) / 9} />
+        <ModelComparisonPanelNoSSR height={height} width={(width * 4) / 9} />
       </div>
     </section>
   )
