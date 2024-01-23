@@ -70,7 +70,7 @@ to start the backend server.
 
 ## Adding case study
 
-please see
+please see [adding case study](server/calculate/README.md)
 
 ## Contributing
 
