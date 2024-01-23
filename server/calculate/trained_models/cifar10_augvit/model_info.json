@@ -1,0 +1,8 @@
+{
+  "modelId": "cifar10_vit",
+  "modelName": "cifar10_vit",
+  "modelDescription": "Learning Rate: 0.001, Batch Size: 1024, Epochs: 150, Hidden Units: 512",
+  "modelDataset": "CIFAR10",
+  "datasetId": "cifar10",
+  "modelDatasetDescription": "CIFAR10 dataset"
+}

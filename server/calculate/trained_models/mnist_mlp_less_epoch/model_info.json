@@ -1,0 +1,1 @@
+{"modelId": "mnist_mlp_less_epoch", "modelName": "mnist_mlp_less_epoch", "modelDescription": "Learning Rate: 0.001, Batch Size: 1024, Epochs: 100, Hidden Units: 512", "modelDataset": "MNIST", "datasetId": "mnist", "modelDatasetDescription": "MNIST dataset 60000"}
