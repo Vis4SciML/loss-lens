@@ -1,10 +1,7 @@
-import collections
 from flask import Flask, request, jsonify
-from bson import json_util
-import json
 
 
-from calculate2.database.db_util import * 
+from calculate.database.db_util import * 
 
 app = Flask(__name__)
 
