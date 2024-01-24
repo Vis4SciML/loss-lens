@@ -50,7 +50,7 @@ Note that, we want this process very simple by executing the `case_study_[name].
 
 Since all the computed data is either stored in the local machine or your own docker containers, remember to dump the database as the backup and overwrite the `database/losslensdb` in the root folder, so that next time you will have consistent result by restoring that backup.
 
-To do so, run:
+To do so, if you are using docker, run:
 
 ```
 docker exec [docker-container-id] mongodump --username admin --password pass --authenticationDatabase=admin --db losslensdb --out=/docker-entrypoint-initdb.d/
@@ -59,3 +59,8 @@ docker exec [docker-container-id] mongodump --username admin --password pass --a
 This will automatically backup the current database and save files to `/database/`.
 
 To look for the `[docker-container-id]`, run `docker ps` in the terminal and locate the mongodb container's ID.
+
+If you are building this locally, run:
+```
+mongodump --username admin --password pass --authenticationDatabase=admin --db losslensdb --out=[losslensroot]/database/
+```
