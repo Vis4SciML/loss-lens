@@ -59,7 +59,7 @@ interface UpdateCheckpointId {
   value: string
 }
 
-export const selectedCheckPointIdListSourceAtom = atom<string[]>([])
+export const selectedCheckPointIdListSourceAtom = atom<string[]>(["", ""])
 
 export const selectedCheckPointIdListAtom = atom(
   (get) => {

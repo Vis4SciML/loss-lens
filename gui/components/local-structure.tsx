@@ -19,11 +19,15 @@ export default function LocalStructure({ height, width }: LocalStructureProps) {
 
   if (selectedCheckPointIdList.length !== 0) {
     const modeCards = selectedCheckPointIdList.map((checkPointId, mId) => {
+      console.log("selectedCheckPointIdList")
+      console.log(selectedCheckPointIdList)
+      console.log("checkPointId")
+      console.log(checkPointId)
       if (checkPointId === "") {
         return (
           <div className="col-span-5 h-full p-1" key={mId}>
             <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
-              please select a case study to start
+              please select a checkpoint
             </div>
           </div>
         )

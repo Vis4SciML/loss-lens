@@ -78,8 +78,36 @@ def get_layer_similarity_data():
 
 
     data = getDocument(LAYER_SIMILARITY, query)
-    print(data)
-    return jsonify(data)
+    grid = data["grid"]
+    flattenedGrid = []
+    # there is a bug in the database for resnet, before fixing the data, we need to do this
+    offset = 0
+    if data["caseId"]== "resnet20":
+        offset = -1
+    for i in range(len(grid) + offset):
+        for j in range(len(grid[i]) + offset):
+            flattenedGrid.append(
+                {
+                    "xId": j,
+                    "yId": i,
+                    "value": grid[i][j]
+                }
+            )
+
+    res = {
+        "caseId": data["caseId"],
+        "modePairId": data["modePairId"],
+        "modelY": modelId0,
+        "modelX": modelId1,
+        "checkPointY": modeId0,
+        "checkPointX": modeId1,
+        "grid": flattenedGrid,
+        "yLabels": data["xLabels"],
+        "xLabels": data["yLabels"],
+        "upperBound": data["upperBound"],
+        "lowerBound": data["lowerBound"]
+    }
+    return jsonify(res)
 
 
 @app.route("/confusion-matrix-bar-data", methods=["GET"])

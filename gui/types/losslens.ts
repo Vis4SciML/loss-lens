@@ -131,7 +131,15 @@ export function isMergeTreeDataType(obj: any): obj is MergeTreeData {
 export interface LayerSimilarityData {
   caseId: string
   modePairId: string
-  grid: number[][]
+  modelX: string
+  modelY: string
+  checkPointX: string
+  checkPointY: string
+  grid: {
+    xId: number
+    yId: number
+    value: number
+  }[]
   xLabels: string[]
   yLabels: string[]
   upperBound: number

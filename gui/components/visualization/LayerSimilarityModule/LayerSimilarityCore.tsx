@@ -10,68 +10,19 @@ interface LayerSimilarityCoreProp {
   data: LayerSimilarityData
   height: number
   width: number
-  // xCheckBoxItems: string[]
-  // yCheckBoxItems: string[]
-}
-function formatString(inputString: string, limit: number) {
-  if (!inputString) {
-    return ""
-  }
-  if (inputString.length > limit) {
-    return "..." + inputString.slice(-limit)
-  } else {
-    return inputString
-  }
 }
 
 function render(
   svgRef: React.RefObject<SVGSVGElement>,
   wrapperRef: React.RefObject<HTMLDivElement>,
   data: LayerSimilarityData
-  // xCheckBoxItems: string[],
-  // yCheckBoxItems: string[]
 ) {
-  console.log("rendering layer similarity")
-  console.log(data)
-  //get the max length of the label
-  const maxLength = Math.max(
-    ...data.xLabels.map((d) => d.length),
-    ...data.yLabels.map((d) => d.length)
-  )
-
-  const inputString = data.modePairId
-  let count = 0
-
-  for (let i = 0; i < inputString.length; i++) {
-    if (inputString[i] === "_") {
-      count++
-    }
-  }
-
-  let middleUnderscore = Math.ceil(count / 2)
-  let indexOfMiddleUnderscore = -1
-  for (let i = 0; i <= inputString.length; i++) {
-    if (inputString[i] === "_") {
-      middleUnderscore--
-    }
-    if (middleUnderscore === 0) {
-      indexOfMiddleUnderscore = i
-      break
-    }
-  }
-
-  // Split the string into two parts based on the middle underscore
-  let firstHalf = inputString.substring(0, indexOfMiddleUnderscore)
-  let secondHalf = inputString.substring(indexOfMiddleUnderscore + 1)
-
-  console.log("First Half:", firstHalf)
-  console.log("Second Half:", secondHalf)
-
-  const xLabel = firstHalf + " Layers"
-  const yLabel = secondHalf + " Layers"
+  console.log("render")
+  const xLabel = data.modelX
+  const yLabel = data.modelY
   const divElement = wrapperRef.current
-  const width = divElement?.clientWidth
-  const height = divElement?.clientHeight
+  const width = divElement?.clientWidth || 0
+  const height = divElement?.clientHeight || 0
 
   const margin = {
     top: 80,
@@ -88,51 +39,18 @@ function render(
     .select("g")
     .attr("transform", `translate(${margin.left},${margin.top})`)
 
-  const filteredRowData = data.grid.map((d, i) => {
-    return {
-      values: d,
-      filteredRowId: i,
-    }
-  })
-  // .filter((_d, i) => yCheckBoxItems[i] === true)
-
-  const filteredColData = filteredRowData[0].values.map((d, i) => {
-    return {
-      filteredColId: i,
-      value: d,
-    }
-  })
-  // .filter((_d, i) => xCheckBoxItems[i] === true)
-
-  const yScale = d3
-    .scaleBand()
-    .domain(filteredRowData.map((d) => d.filteredRowId))
-    .range([h, 0])
+  const yScale = d3.scaleBand().domain(data.yLabels).range([h, 0])
 
   const xScale = d3
     .scaleBand()
-    .range([0, w])
-    .domain(filteredColData.map((d) => d.filteredColId))
+    .range([0, yScale.bandwidth() * data.xLabels.length])
+    .domain(data.xLabels)
 
-  // const xLabels = data.xLabels.filter((_d, i) => xCheckBoxItems[i] === true)
-  // const yLabels = data.yLabels.filter((_d, i) => yCheckBoxItems[i] === true)
+  const cells = svg.selectAll(".cell").data(data.grid)
 
-  const rows = svg.selectAll(".row").data(filteredRowData)
-
+  const lowerBound = data.lowerBound
+  const upperBound = data.upperBound
   const customizedColors = layerSimilarityColor.gridColor
-
-  const upperBound = Math.max(
-    ...filteredRowData.map((d) =>
-      // Math.max(...d.values.filter((_dd, j) => xCheckBoxItems[j] === true))
-      Math.max(...d.values)
-    )
-  )
-  const lowerBound = Math.min(
-    ...filteredRowData.map((d) =>
-      // Math.min(...d.values.filter((_dd, j) => xCheckBoxItems[j] === true))
-      Math.min(...d.values)
-    )
-  )
 
   const domainSteps = customizedColors.map((_color, i) => {
     return (
@@ -142,37 +60,66 @@ function render(
 
   const color = d3.scaleLinear().domain(domainSteps).range(customizedColors)
 
-  rows
-    .join("g")
-    .attr("class", "row")
-    .attr("transform", (d) => `translate(0, ${yScale(d.filteredRowId)})`)
+  let tooltip = d3
+    .select("#tooltip")
+    .style("position", "absolute")
+    .style("visibility", "hidden")
+    .style("pointer-events", "none")
+    .style("padding", "10px")
+    .style("background", "rgba(0, 0, 0, 0.6)")
+    .style("color", "#fff")
+    .style("border-radius", "4px")
+    .style("font-size", "0.9em")
 
-  const row = rows.selectAll(".cell").data(
-    (d) =>
-      d.values.map((dd, i) => {
-        return { value: dd, filteredColId: i }
-      })
-    // .filter((dd) => xCheckBoxItems[dd.filteredColId] === true)
-  )
-
-  row
+  cells
     .join("rect")
     .attr("class", "cell")
-    .attr("x", (d) => xScale(d.filteredColId))
-    .attr("y", 0)
+    .attr("x", (_d, i) => xScale(data.xLabels[i % data.xLabels.length]))
+    .attr("y", (_d, i) =>
+      yScale(data.yLabels[Math.floor(i / data.xLabels.length)])
+    )
     .attr("width", xScale.bandwidth())
-    .attr("height", yScale.bandwidth())
+    .attr("height", xScale.bandwidth())
     .style("fill", (d) => color(d.value))
-    .style("stroke", "none")
-    .style("stroke-width", 0.5)
+    .on("mouseover", function (_, d) {
+      d3.select(this).raise().attr("stroke", "black").attr("stroke-width", 2)
+      tooltip
+        .style("visibility", "visible")
+        .html(
+          "<div> Similarity: " +
+            d.value +
+            "</div>" +
+            "<div> Layer of " +
+            xLabel +
+            " </div>" +
+            "<div> " +
+            data.xLabels[d.xId] +
+            " </div>" +
+            "<div> Layer of " +
+            yLabel +
+            " </div>" +
+            "<div>" +
+            data.yLabels[d.yId] +
+            " </div>"
+        )
+    })
+    .on("mousemove", function (event) {
+      tooltip
+        .style("top", event.pageY - 10 + "px")
+        .style("left", event.pageX + 10 + "px")
+    })
+    .on("mouseout", function () {
+      d3.select(this).attr("stroke", "none")
+      tooltip.style("visibility", "hidden")
+    })
 
   const legend = svg.selectAll(".legend").data([1])
   let lg = svg
     .append("defs")
     .append("linearGradient")
     .attr("id", "layersim")
-    .attr("x1", "0%")
-    .attr("x2", "100%")
+    .attr("x1", "100%")
+    .attr("x2", "0%")
     .attr("y1", "0%")
     .attr("y2", "0%")
 
@@ -221,20 +168,15 @@ function render(
     .attr("class", "xAxis")
     .attr("transform", `translate(0, 0)`)
     .call(
-      d3.axisTop(xScale).tickValues(
-        xScale.domain().filter(function (_d, i) {
-          return i % 10 === 0
-        })
-      )
+      d3.axisTop(xScale).tickFormat((d, i) => {
+        if (i % 10 === 0) return i
+        return ""
+      })
     )
     .selectAll(".tick text")
     .attr("font-size", "0.9rem")
     .attr("class", "font-serif")
     .attr("fill", "#000")
-  // .attr("text-anchor", "end")
-  // .attr("transform", `rotate(-90) translate(-10, -${xScale.bandwidth() / 2})`)
-  // xAxis.select(".domain").attr("display", "none")
-  // xAxis.selectAll(".tick line").attr("display", "none")
 
   const yAxis = svg.selectAll(".yAxis").data([data])
   yAxis
@@ -242,18 +184,15 @@ function render(
     .attr("class", "yAxis")
     .attr("transform", `translate(0, 0)`)
     .call(
-      d3.axisLeft(yScale).tickValues(
-        xScale.domain().filter(function (_d, i) {
-          return i % 10 === 0
-        })
-      )
+      d3.axisLeft(yScale).tickFormat((d, i) => {
+        if (i % 10 === 0) return i
+        return ""
+      })
     )
     .selectAll(".tick text")
     .attr("font-size", "0.9rem")
     .attr("class", "font-serif")
     .attr("fill", "#000")
-  // yAxis.select(".domain").attr("display", "none")
-  // yAxis.selectAll(".tick line").attr("display", "none")
 
   legendAxis
     .selectAll(".legendLabel")
@@ -291,7 +230,7 @@ function render(
     .attr("font-weight", "semi-bold")
     .attr("text-anchor", "middle ")
     .attr("fill", "#000")
-    .text(xLabel)
+    .text(xLabel + " " + data.checkPointX)
 
   svg
     .selectAll(".yLabel")
@@ -305,22 +244,18 @@ function render(
     .attr("text-anchor", "middle ")
     .attr("fill", "#000")
     .attr("transform", `rotate(-90)`)
-    .text(yLabel)
+    .text(yLabel + " " + data.checkPointY)
 }
 
 export default function LayerSimilarityCore({
   width,
   height,
-  data, // xCheckBoxItems,
-  // yCheckBoxItems,
+  data,
 }: LayerSimilarityCoreProp): React.JSX.Element {
   const svg = React.useRef<SVGSVGElement>(null)
   const wrapperRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
-    // if (!data || xCheckBoxItems.length === 0 || yCheckBoxItems.length === 0)
-    //   return
-    // const clonedData = JSON.parse(JSON.stringify(data))
     render(svg, wrapperRef, data)
   }, [data, width, height])
 
@@ -329,6 +264,19 @@ export default function LayerSimilarityCore({
       <svg ref={svg}>
         <g></g>
       </svg>
+      <div
+        id="tooltip"
+        style={{
+          position: "absolute",
+          visibility: "hidden",
+          pointerEvents: "none",
+          padding: "10px",
+          background: "rgba(0, 0, 0, 0.6)",
+          color: "#fff",
+          borderRadius: "4px",
+          fontSize: "0.9em",
+        }}
+      ></div>
     </div>
   )
 }
