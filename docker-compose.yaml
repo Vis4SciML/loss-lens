@@ -23,7 +23,7 @@ services:
       - mongodb
     environment:
       - MONGO_HOST=mongodb
-    command: gunicorn server2:app -c gunicorn.conf.py
+    command: gunicorn server:app -c gunicorn.conf.py
 
   mongodb:
     image: mongo

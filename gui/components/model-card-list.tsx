@@ -13,14 +13,19 @@ export default function ModelCardList() {
   } else if (modelMetaDataLoader.state === "loading") {
     return <div>loading</div>
   } else {
-    if (modelMetaDataLoader.data === null) {
-      return <div className={" h-[900px] w-full text-center "}>Empty</div>
+    if (!modelMetaDataLoader || !modelMetaDataLoader.data) {
+      return (
+        <div className="grid h-auto grid-cols-11">
+          <div className="col-span-1 flex h-full items-center justify-center font-serif text-lg"></div>
+          <div className={" col-span-10 h-full w-full  p-1 "}>
+            <div className=" flex h-full w-full items-center justify-center rounded border text-gray-500">
+              please select a case study to start
+            </div>
+          </div>
+        </div>
+      )
     } else {
-      console.log(modelMetaDataLoader)
       const modelMetaDataList = modelMetaDataLoader.data
-      if (!modelMetaDataList) {
-        return <div className={" h-[900px] w-full text-center "}>Empty</div>
-      }
       const modelCards = modelMetaDataList.data.map((model, index) => {
         const modelDescriptionUI = model.modelDescription
           .split(",")
