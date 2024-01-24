@@ -52,6 +52,7 @@ mongorestore --host mongodb --port 27017 --db losslensdb ./losslensdb/
 ```
 
 **Run LossLens**
+
 Run
 
 ```bash
@@ -70,7 +71,7 @@ to start the backend server.
 
 ## Adding case study
 
-please see
+please see [adding case study](server/calculate/README.md)
 
 ## Contributing
 
