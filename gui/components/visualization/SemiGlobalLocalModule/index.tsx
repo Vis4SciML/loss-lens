@@ -9,7 +9,9 @@ import SemiGlobalLocalCore from "./SemiGlobalLocalCore"
 
 export default function SemiGlobalLocalModule({ height, width }) {
   const [loader] = useAtom(loadableSemiGlobalLocalStructureAtom)
-  const [, setSelectedCheckPointIdList] = useAtom(selectedCheckPointIdListAtom)
+  const [selectedCheckPointIdList, setSelectedCheckPointIdList] = useAtom(
+    selectedCheckPointIdListAtom
+  )
   const updateCheckpointId = (index: number, newId: string) => {
     setSelectedCheckPointIdList({ index, value: newId })
   }
@@ -50,6 +52,7 @@ export default function SemiGlobalLocalModule({ height, width }) {
                 height={canvasHeight / 2}
                 width={canvasWidth}
                 data={loader.data}
+                selectedCheckPointIdList={selectedCheckPointIdList}
                 updateSelectedModelIdModeId={updateCheckpointId}
                 modelId={modelId}
                 modelIdIndex={modelIdIndex}

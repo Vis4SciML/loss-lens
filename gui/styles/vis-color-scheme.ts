@@ -1,10 +1,12 @@
-import { map } from "d3"
-
 export const semiGlobalLocalSturctureColor = {
   backgroundColor: "hsl(0, 0%, 93.7%)",
   metricBarColor: "#c1c9c2",
-  radioBarColor: "rgb(199,169,132)",
+  hoverMetricBarColor: "#8d9b8f",
+  radioBarColor: "#C7A984",
+  hoverRadioBarColor: "#B4895B",
   centerCircleColor: "hsl(0 0% 60%)",
+  linkColor: "#b1b1b1",
+  // linkColor: "#674d85",
   strokeColor: "#000",
   textColor: "#000",
   // textColor: "#b1b1b1",

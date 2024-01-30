@@ -55,14 +55,14 @@ export default function ModelCardList() {
                 </svg>
               </div>
             </div>
-            <Label className="font-serif text-lg font-semibold">
+            <Label className="font-serif text-lg font-medium">
               {" "}
               Model Info
             </Label>
             <div className="font-serif">{modelDescriptionUI}</div>
             {datasetDescriptionUI && (
               <>
-                <Label className="font-serif text-lg font-semibold">
+                <Label className="font-serif text-lg font-medium">
                   Dataset:
                 </Label>
                 <div className="font-serif">{datasetDescriptionUI}</div>

@@ -32,8 +32,10 @@ function render(
   const h = height - margin.top - margin.bottom
   const w = width - margin.left - margin.right
 
-  const upperBound = globalInfo.lossBounds.upperBound
-  const lowerBound = globalInfo.lossBounds.lowerBound
+  // const upperBound = globalInfo.lossBounds.upperBound
+  // const lowerBound = globalInfo.lossBounds.lowerBound
+  const upperBound = data.grid.flat().reduce((a, b) => Math.max(a, b))
+  const lowerBound = data.grid.flat().reduce((a, b) => Math.min(a, b))
 
   const svg = d3
     .select(svgRef.current)
