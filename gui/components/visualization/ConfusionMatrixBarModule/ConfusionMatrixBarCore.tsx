@@ -46,10 +46,10 @@ function render(
   const width = divElement?.clientWidth
   const height = divElement?.clientHeight
   const margin = {
-    top: 80,
+    top: 60,
     right: 85,
-    bottom: 120,
-    left: 85,
+    bottom: 150,
+    left: 105,
   }
   const h = height - margin.top - margin.bottom
   const w = width - margin.left - margin.right
@@ -60,29 +60,40 @@ function render(
     .select("g")
     .attr("transform", `translate(${margin.left},${margin.top})`)
 
-  const xScale = d3
+  let tooltip = d3
+    .select("#tooltip")
+    .style("position", "absolute")
+    .style("visibility", "hidden")
+    .style("pointer-events", "none")
+    .style("padding", "10px")
+    .style("background", "rgba(0, 0, 0, 0.6)")
+    .style("color", "#fff")
+    .style("border-radius", "4px")
+    .style("font-size", "0.9em")
+
+  const yScale = d3
     .scaleBand()
-    .range([0, w])
+    .range([h, 0])
     .domain(data.classesName)
     .padding(0.2)
 
-  const yScale = d3
+  const xScale = d3
     .scaleLinear()
     .domain([
       // -d3.max(data.grid, (d) => d3.max([d.tn[0] + d.fn[0], d.tn[1] + d.fn[1]])),
       0,
       d3.max(data.grid, (d) => d3.max([d.tp[0] + d.fp[0], d.tp[1] + d.fp[1]])),
     ])
-    .range([h, 0])
+    .range([0, w])
 
-  const subXScale = d3.scaleBand().range([0, xScale.bandwidth()]).domain([0, 1])
+  const subYScale = d3.scaleBand().range([0, yScale.bandwidth()]).domain([0, 1])
 
-  const groups = svg
+  svg
     .selectAll(".barGroup")
     .data(data.grid)
     .join("g")
     .attr("class", "barGroup")
-    .attr("transform", (d, i) => `translate(${xScale(data.classesName[i])},0)`)
+    .attr("transform", (d, i) => `translate(0, ${yScale(data.classesName[i])})`)
     .selectAll(".stackedBarGroup")
     .data((d) => {
       return [
@@ -102,7 +113,7 @@ function render(
     })
     .join("g")
     .attr("class", "stackedBarGroup")
-    .attr("transform", (_d, i) => `translate(${subXScale(i)},0)`)
+    .attr("transform", (_d, i) => `translate(0, ${subYScale(i)})`)
     .selectAll(".stackedBar")
     .data((d) => d)
     .join("rect")
@@ -115,12 +126,12 @@ function render(
         return yScale(0)
       }
     })
-    .attr("width", subXScale.bandwidth())
-    .attr("height", (d, i) => {
+    .attr("height", subYScale.bandwidth())
+    .attr("width", (d, i) => {
       if (i === 0 || i === 1) {
-        return yScale(0) - yScale(d.stack)
+        return xScale(d.stack)
       } else {
-        return yScale(0) - yScale(-d.stack)
+        return xScale(-d.stack)
       }
     })
     .attr("fill", (d, i) => {
@@ -141,34 +152,27 @@ function render(
       }
     })
     .attr("stroke", "none")
-
-  const xAxis = svg
-    .selectAll(".xAxis")
-    .data([0])
-    .join("g")
-    .attr("class", "xAxis")
-    .attr("transform", `translate(0,${h})`)
-    .call(d3.axisBottom(xScale))
-
-  xAxis
-    .selectAll(".axisLabel")
-    .data([0])
-    .join("text")
-    .attr("class", "axisLabel font-serif")
-    .attr("x", w + 5)
-    .attr("y", 5)
-    .attr("text-anchor", "start")
-    .attr("font-size", "0.9rem")
-    .text("Label")
-    .attr("fill", confusionMatrixColor.textColor)
+    .on("mouseover", function (_, d) {
+      tooltip
+        .style("visibility", "visible")
+        .html("<div> " + d.value + " </div>")
+    })
+    .on("mousemove", function (event) {
+      tooltip
+        .style("top", event.pageY - 10 + "px")
+        .style("left", event.pageX + 10 + "px")
+    })
+    .on("mouseout", function () {
+      tooltip.style("visibility", "hidden")
+    })
 
   const yAxis = svg
     .selectAll(".yAxis")
     .data([0])
     .join("g")
     .attr("class", "yAxis")
-    .attr("transform", `translate(0,0)`)
-    .call(d3.axisLeft(yScale).tickFormat((d) => d3.format(".2s")(d)))
+    .attr("transform", `translate(0,${0})`)
+    .call(d3.axisLeft(yScale))
 
   yAxis
     .selectAll(".axisLabel")
@@ -176,25 +180,42 @@ function render(
     .join("text")
     .attr("class", "axisLabel font-serif")
     .attr("x", 0)
+    .attr("y", -20)
+    .attr("text-anchor", "start")
+    .attr("font-size", "1rem")
+    .text("Label")
+    .attr("fill", confusionMatrixColor.textColor)
+
+  const xAxis = svg
+    .selectAll(".xAxis")
+    .data([0])
+    .join("g")
+    .attr("class", "xAxis")
+    .attr("transform", `translate(0,${h})`)
+    .call(d3.axisBottom(xScale).tickFormat((d) => d3.format(".2s")(d)))
+
+  xAxis
+    .selectAll(".axisLabel")
+    .data([0])
+    .join("text")
+    .attr("class", "axisLabel font-serif")
+    .attr("x", w + 35)
     .attr("y", -10)
-    .attr("text-anchor", "end")
-    .attr("font-size", "0.9rem")
+    .attr("text-anchor", "middle")
+    .attr("font-size", "1rem")
     .text("Predicted")
     .attr("fill", confusionMatrixColor.textColor)
 
   xAxis
     .selectAll(".tick text")
-    .attr("font-size", "0.9rem")
+    .attr("font-size", "1rem")
     .attr("class", "font-serif")
     .attr("text-anchor", "end")
-    .attr(
-      "transform",
-      `rotate(-90) translate (-10, -${xScale.bandwidth() / 2} ) `
-    )
+    .attr("transform", `translate (0, 0 ) rotate(-45) `)
 
   yAxis
     .selectAll(".tick text")
-    .attr("font-size", "0.9rem")
+    .attr("font-size", "1rem")
     .attr("class", "font-serif")
 
   const legendGroup = svg
@@ -203,11 +224,10 @@ function render(
     .join("g")
     .attr("class", "legendgroup")
     .attr("transform", (d, i) => {
-      const gap = width / 3
       if (d === 0 || d === 1 || d === 2) {
-        return `translate(${-10 + i * gap},${-60})`
+        return `translate(${0},${h + 70 + i * 30})`
       } else {
-        return `translate(${-10},${-60})`
+        return `translate(${0},${h + 20 + i * 30})`
       }
     })
 
@@ -229,12 +249,6 @@ function render(
         return confusionMatrixColor.secondaryColor
       }
     })
-  // There are multiple "_" in the string, and we only want the one in the middle
-  // first find how many "_" in the string
-
-  // find "_" in the middle and split the string into two parts
-
-  const parts = splitStringAtMiddleUnderscore(data.modePairId)
 
   legendGroup
     .selectAll(".legendText")
@@ -243,31 +257,31 @@ function render(
     .attr("class", "legendText font-serif")
     .attr("x", 30)
     .attr("y", 15)
-    .attr("font-size", "1rem")
+    .attr("font-size", "0.9rem")
     .attr("text-anchor", "start")
     .attr("fill", "#000")
     .text((d, i) => {
       if (d === 0) {
-        return "TP " + parts[0]
+        return "TP " + data.modelY + " " + data.checkPointY
       } else if (d === 1) {
-        return "TP " + parts[1]
+        return "TP " + data.modelX + " " + data.checkPointX
       } else {
         return "FP"
       }
     })
 
-  svg
-    .selectAll(".figure-label")
-    .data([1])
-    .join("text")
-    .attr("class", "figure-label font-serif")
-    .attr("x", w / 2)
-    .attr("y", h + 100)
-    .attr("font-size", "1rem")
-    .attr("font-weight", "semi-bold")
-    .attr("text-anchor", "middle")
-    .attr("fill", "#000")
-    .text("Prediction Disparity View")
+  // svg
+  //   .selectAll(".figure-label")
+  //   .data([1])
+  //   .join("text")
+  //   .attr("class", "figure-label font-serif")
+  //   .attr("x", w / 2)
+  //   .attr("y", h + 100)
+  //   .attr("font-size", "1rem")
+  //   .attr("font-weight", "semi-bold")
+  //   .attr("text-anchor", "middle")
+  //   .attr("fill", "#000")
+  //   .text("Prediction Disparity View")
 }
 
 export default function ConfusionMatrixBarCore({
@@ -289,6 +303,19 @@ export default function ConfusionMatrixBarCore({
       <svg ref={svg}>
         <g></g>
       </svg>
+      <div
+        id="tooltip"
+        style={{
+          position: "absolute",
+          visibility: "hidden",
+          pointerEvents: "none",
+          padding: "10px",
+          background: "rgba(0, 0, 0, 0.6)",
+          color: "#fff",
+          borderRadius: "4px",
+          fontSize: "0.9em",
+        }}
+      ></div>
     </div>
   )
 }

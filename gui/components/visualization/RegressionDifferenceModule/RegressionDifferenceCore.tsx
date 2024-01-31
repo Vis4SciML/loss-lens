@@ -178,11 +178,10 @@ function render(
     .join("g")
     .attr("class", "legendgroup")
     .attr("transform", (d, i) => {
-      const gap = width / 2
       if (d === 0 || d === 1 || d === 2) {
-        return `translate(${-10 + i * gap},${-60})`
+        return `translate(${0},${h + 50 + i * 30})`
       } else {
-        return `translate(${-10},${-60})`
+        return `translate(${0},${h + 50 + i * 30})`
       }
     })
 
@@ -216,24 +215,24 @@ function render(
     .attr("fill", "#000")
     .text((d, i) => {
       if (d === 0) {
-        return parts[0]
+        return data.modelY + " " + data.checkPointY
       } else if (d === 1) {
-        return parts[1]
+        return data.modelX + " " + data.checkPointX
       }
     })
 
-  svg
-    .selectAll(".figure-label")
-    .data([1])
-    .join("text")
-    .attr("class", "figure-label font-serif")
-    .attr("x", w / 2)
-    .attr("y", h + 60)
-    .attr("font-size", "1rem")
-    .attr("font-weight", "semi-bold")
-    .attr("text-anchor", "middle")
-    .attr("fill", "#000")
-    .text("Prediction Disparity View")
+  // svg
+  //   .selectAll(".figure-label")
+  //   .data([1])
+  //   .join("text")
+  //   .attr("class", "figure-label font-serif")
+  //   .attr("x", w / 2)
+  //   .attr("y", h + 60)
+  //   .attr("font-size", "1rem")
+  //   .attr("font-weight", "semi-bold")
+  //   .attr("text-anchor", "middle")
+  //   .attr("fill", "#000")
+  //   .text("Prediction Disparity View")
 }
 
 export default function RegressionDifferenceCore({

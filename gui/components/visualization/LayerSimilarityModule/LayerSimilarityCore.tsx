@@ -206,18 +206,18 @@ function render(
     .attr("fill", "#000")
     .text("CKA Similarity")
 
-  svg
-    .selectAll(".figure-label")
-    .data([1])
-    .join("text")
-    .attr("class", "figure-label font-serif")
-    .attr("x", w / 2)
-    .attr("y", h + 60)
-    .attr("font-size", "1rem")
-    .attr("font-weight", "semi-bold")
-    .attr("text-anchor", "middle ")
-    .attr("fill", "#000")
-    .text("Layer Similarity View")
+  // svg
+  //   .selectAll(".figure-label")
+  //   .data([1])
+  //   .join("text")
+  //   .attr("class", "figure-label font-serif")
+  //   .attr("x", w / 2)
+  //   .attr("y", h + 60)
+  //   .attr("font-size", "1rem")
+  //   .attr("font-weight", "semi-bold")
+  //   .attr("text-anchor", "middle ")
+  //   .attr("fill", "#000")
+  //   .text("Layer Similarity View")
 
   svg
     .selectAll(".xLabel")

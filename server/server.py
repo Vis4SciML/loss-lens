@@ -130,7 +130,17 @@ def get_confusion_matrix_bar_data():
     ]
     }
     data = getDocument(CONFUSION_MATRIX, query)
-    return jsonify(data)
+    res = {
+        "caseId": data["caseId"],
+        "modePairId": data["modePairId"],
+        "modelY": modelId0,
+        "modelX": modelId1,
+        "checkPointY": modeId0,
+        "checkPointX": modeId1,
+        "classesName": data["classesName"],
+        "grid": data["grid"]
+    }
+    return jsonify(res)
 
 
 @app.route("/regression-difference-data", methods=["GET"])
@@ -156,7 +166,16 @@ def get_regression_difference_data():
     ]
     }
     data = getDocument(REGRESSION_DIFFERENCE, query)
-    return jsonify(data)
+    res = {
+        "caseId": data["caseId"],
+        "modePairId": data["modePairId"],
+        "modelY": modelId0,
+        "modelX": modelId1,
+        "checkPointY": modeId0,
+        "checkPointX": modeId1,
+        "grid": data["grid"]
+    }
+    return jsonify(res)
 
 if __name__ == "__main__":
     app.run(debug=True)

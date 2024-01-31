@@ -71,8 +71,9 @@ export default function ModelComparisonPanel({ height, width }) {
             {predictionComparison}
             {similarityPerdictions}
           </div>
-          <div className="col-span-1 flex h-[calc(100vh-5rem)] items-center justify-center font-serif text-lg ">
-            <div>Model Comparison</div>
+          <div className="col-span-1 flex h-[calc(100vh-5rem)] flex-col  justify-around font-serif text-lg ">
+            <div className="p-2">Prediction Disparity View</div>
+            <div className="p-2">Layer Similarity View</div>
           </div>
         </div>
       </div>
