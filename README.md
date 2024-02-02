@@ -11,6 +11,8 @@ To run the system through Docker, run the following under the root directory:
 docker-compose up
 ```
 
+Then, you should be able to launch the system via `localhost:3000`.
+
 ## Run Locally
 
 Running locally needs a bit more step. Before installing the LossLens, make sure you have [Nodejs](https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-22-04), [Python](https://www.python.org), and [MongoDB](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/) installed first. Version requirements:
