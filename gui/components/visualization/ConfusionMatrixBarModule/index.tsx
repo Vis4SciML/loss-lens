@@ -3,6 +3,7 @@
 import { useAtom } from "jotai"
 
 import { loadableConfusionMatrixBarDataAtom } from "@/lib/store"
+import Loader from "@/components/loader"
 
 import ConfusionMatrixBarCore from "./ConfusionMatrixBarCore"
 
@@ -12,9 +13,21 @@ export default function ConfusionMatrixBarModule({ height, width }) {
   )
 
   if (confusionMatrixDataLoader.state === "hasError") {
-    return <div>error</div>
+    return (
+      <div
+        className={"flex h-[550px] w-full flex-col justify-center text-center "}
+      >
+        Confusion Matrix View is currently not available.
+      </div>
+    )
   } else if (confusionMatrixDataLoader.state === "loading") {
-    return <div>loading</div>
+    return (
+      <div
+        className={"flex h-[550px] w-full flex-col items-center justify-center"}
+      >
+        <Loader />
+      </div>
+    )
   } else {
     if (confusionMatrixDataLoader.data === null) {
       return (

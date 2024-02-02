@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Icons } from "@/components/icons"
+import Loader from "@/components/loader"
 
 import LayerSimilarityCore from "./LayerSimilarityCore"
 
@@ -111,9 +112,23 @@ export default function LayerSimilarityModule({
   //     {/* </div> */}
 
   if (layerSimilarityDataAtomLoader.state === "hasError") {
-    return <div>error</div>
+    return (
+      <div
+        className={"flex h-[550px] w-full flex-col justify-center text-center "}
+      >
+        Layer Similarity View is currently not available.
+      </div>
+    )
   } else if (layerSimilarityDataAtomLoader.state === "loading") {
-    return <div>loading</div>
+    return (
+      <div
+        className={
+          "flex h-[550px] w-full flex-col items-center justify-center  "
+        }
+      >
+        <Loader />
+      </div>
+    )
   } else {
     if (layerSimilarityDataAtomLoader.data === null) {
       return (
