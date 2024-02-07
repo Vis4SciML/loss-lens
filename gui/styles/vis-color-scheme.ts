@@ -6,6 +6,7 @@ export const semiGlobalLocalSturctureColor = {
   hoverRadioBarColor: "#B4895B",
   centerCircleColor: "hsl(0 0% 60%)",
   linkColor: "#b1b1b1",
+  hoverLinkColor: "#999",
   // linkColor: "#674d85",
   strokeColor: "#000",
   textColor: "#000",

@@ -287,6 +287,30 @@ function render(
       return generateCurvePath(d)
       // return generateSpringPath(d)
     })
+    .on("mouseover", function (event, d) {
+      d3.select(this).attr(
+        "stroke",
+        semiGlobalLocalSturctureColor.hoverLinkColor
+      )
+      tooltip
+        .style("visibility", "visible")
+        .html(
+          "Source: " +
+            d.source.modeId +
+            "<br>" +
+            "Target: " +
+            d.target.modeId +
+            "<br>" +
+            "Mode Connectivity: " +
+            d.weight
+        )
+        .style("top", event.pageY - 10 + "px")
+        .style("left", event.pageX + 10 + "px")
+    })
+    .on("mouseout", function () {
+      d3.select(this).attr("stroke", semiGlobalLocalSturctureColor.linkColor)
+      tooltip.style("visibility", "hidden")
+    })
 
   // ploting nodes
 
@@ -317,6 +341,7 @@ function render(
     .attr("class", "node")
     .attr("id", (d) => "nodeGroup-" + d.modelId + "-" + d.modeId)
     .attr("transform", positionNode)
+
 
   const performanceGroup = node
     .selectAll(".performanceGroup")

@@ -32,8 +32,8 @@ function render(
   const h = height - margin.top - margin.bottom
   const w = width - margin.left - margin.right
 
-  // const upperBound = globalInfo.lossBounds.upperBound
-  // const lowerBound = globalInfo.lossBounds.lowerBound
+  const globalUpperBound = globalInfo.lossBounds.upperBound
+  const globalLowerBound = globalInfo.lossBounds.lowerBound
   const upperBound = data.grid.flat().reduce((a, b) => Math.max(a, b))
   const lowerBound = data.grid.flat().reduce((a, b) => Math.min(a, b))
 
@@ -55,8 +55,8 @@ function render(
   // const m = Math.ceil((y1 - y0) / q)
 
   const thresholdArray = []
-  for (let i = 0; i < 40; i++) {
-    const threshold = lowerBound + (i / 39) * (upperBound - lowerBound)
+  for (let i = 0; i < 30; i++) {
+    const threshold = lowerBound + (i / 29) * (upperBound - lowerBound)
     thresholdArray.push(threshold)
   }
 
@@ -64,7 +64,7 @@ function render(
 
   const domainSteps = customizedColors.map((_color, i) => {
     return (
-      upperBound - (i * (upperBound - lowerBound)) / customizedColors.length
+      globalUpperBound - (i * (globalUpperBound - globalLowerBound)) / customizedColors.length
     )
   })
 
@@ -104,7 +104,8 @@ function render(
     .data(contours)
     .join("path")
     .attr("fill", (d) => color(d.value))
-    .attr("stroke", "#000")
+    .attr("stroke", "#333")
+    .attr("stroke-opacity", 0.5)
     .attr("stroke-width", 0.5)
     .attr("d", d3.geoPath())
 
@@ -138,7 +139,7 @@ function render(
   const legendScale = d3
     .scaleLinear()
     .range([0, w - 45])
-    .domain([lowerBound, upperBound])
+    .domain([globalLowerBound, globalUpperBound])
 
   const legendAxis = svg.selectAll(".legendAxis").data([data])
 
