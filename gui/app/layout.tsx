@@ -37,7 +37,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <head />
         <body
           className={cn(
-            "min-h-screen bg-background font-sans antialiased",
+            "min-h-screen overflow-hidden bg-background font-sans antialiased",
             fontSans.variable
           )}
         >
@@ -46,7 +46,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <div className="relative flex flex-col">
             <div className="flex-1">{children}</div>
           </div>
-          <TailwindIndicator />
+          {/* <TailwindIndicator /> */}
           {/* </ThemeProvider> */}
         </body>
       </html>

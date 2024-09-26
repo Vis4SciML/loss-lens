@@ -113,12 +113,15 @@ export default function IndexPage() {
         </div>
       </div>
       <div className="grid grid-cols-12">
-        <div className="col-span-8 h-[calc(100vh-4rem)]">
+
+        <div className="col-span-1 h-[calc(100vh-4rem)]"></div>
+        <div className="col-span-10 h-[calc(100vh-4rem)]">
           <SemiGlobalLocalModuleNoSSR height={height} width={(width * 4) / 9} />
           <ModelCardListNoSSR />
           <LocalStructureNoSSR height={400} width={400} />
         </div>
-        <ModelComparisonPanelNoSSR height={height} width={(width * 4) / 9} />
+        <div className="col-span-1 h-[calc(100vh-4rem)]"></div>
+        {/* <ModelComparisonPanelNoSSR height={height} width={(width * 4) / 9} /> */}
       </div>
     </section>
   )
