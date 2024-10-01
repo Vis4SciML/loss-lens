@@ -10,7 +10,7 @@ import {
     semiGlobalLocalSturctureColor,
 } from "@/styles/vis-color-scheme"
 
-interface SemiGlobalLocalCoreProp {
+interface GlobalCoreProp {
     data: SemiGlobalLocalStructure
     height: number
     width: number
@@ -18,6 +18,7 @@ interface SemiGlobalLocalCoreProp {
     updateSelectedModelIdModeId: (index: number, id: string) => void
     modelId: string
     modelIdIndex: number
+    modelMetaData: any
 }
 
 function render(
@@ -27,7 +28,8 @@ function render(
     selectedCheckPointIdList: string[],
     updateSelectedModelIdModeId: (index: number, id: string) => void,
     modelId: string,
-    modelIdIndex: number
+    modelIdIndex: number,
+    modelMetaData: any
 ) {
     const divElement = wraperRef.current
     const width = divElement?.clientWidth || 0
@@ -71,6 +73,7 @@ function render(
         },
         {}
     )
+    console.log("modelMetaData", modelMetaData)
 
     const tooltip = d3
         .select("#tooltip")
@@ -467,6 +470,10 @@ function render(
         ])
         .scaleExtent([0.5, 8])
 
+    // Center the graph visualization with a fixed value
+    const centerX = width / 2
+    const centerY = height / 2
+
     svgbase
         .call(zoom)
         .call(zoom.transform, d3.zoomIdentity.scale(1))
@@ -474,11 +481,34 @@ function render(
         .duration(0)
         .call(
             zoom.transform,
-            d3.zoomIdentity.scale(0.7).translate(width / 6, height / 6)
+            d3.zoomIdentity.scale(0.52).translate(centerX, centerY - 100)
+        )
+
+    // Render modelMetaData as a compact information card
+    const infoCard = svgbase
+        .append("foreignObject")
+        .attr("x", 10)
+        .attr("y", height - 160)
+        .attr("width", width - 20)
+        .attr("height", 160)
+        .append("xhtml:div")
+        .style("background", "white")
+        .style("border", "1px solid black")
+        .style("padding", "5px")
+        .style("font-size", "12px")
+        .style("color", "black")
+        .style("overflow", "hidden")
+        .style("text-overflow", "ellipsis")
+        .style("white-space", "pre-wrap")
+        .style("word-wrap", "break-word")
+        .html(
+            Object.entries(modelMetaData)
+                .map(([key, value]) => `<b>${key}:</b> ${value}`)
+                .join("<br>")
         )
 }
 
-export default function SemiGlobalLocalCore({
+export default function GlobalCore({
     width,
     height,
     data,
@@ -486,16 +516,21 @@ export default function SemiGlobalLocalCore({
     updateSelectedModelIdModeId,
     modelId,
     modelIdIndex,
-}: SemiGlobalLocalCoreProp): React.JSX.Element {
+    modelMetaData,
+}: GlobalCoreProp): React.JSX.Element {
     const svg = React.useRef<SVGSVGElement>(null)
     const wraperRef = React.useRef<HTMLDivElement>(null)
 
     React.useEffect(() => {
         const updateChart = () => {
             const divElement = wraperRef.current
-            const width = divElement.clientWidth
-            const height = divElement.clientHeight
-            d3.select(svg.current).attr("width", width).attr("height", height)
+            if (divElement) {
+                const width = divElement.clientWidth
+                const height = divElement.clientHeight
+                d3.select(svg.current)
+                    .attr("width", width)
+                    .attr("height", height)
+            }
         }
 
         updateChart()
@@ -516,7 +551,8 @@ export default function SemiGlobalLocalCore({
             selectedCheckPointIdList,
             updateSelectedModelIdModeId,
             modelId,
-            modelIdIndex
+            modelIdIndex,
+            modelMetaData
         )
     }, [
         data,
@@ -526,6 +562,7 @@ export default function SemiGlobalLocalCore({
         updateSelectedModelIdModeId,
         modelId,
         modelIdIndex,
+        modelMetaData,
     ])
 
     return (
