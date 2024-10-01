@@ -302,33 +302,28 @@ function render(
 
     const performanceTextScale = d3
         .scaleBand()
-        .domain(d3.range(numberOfMetrics))
+        .domain(d3.range(numberOfMetrics).map(String))
         .range([
             Math.PI / numberOfMetrics,
             2 * Math.PI + Math.PI / numberOfMetrics,
         ])
 
-    const getTextAnchor = (i) => {
-        if (numberOfMetrics % 2 === 0) {
-            return performanceTextScale(i) < Math.PI ? "start" : "end"
-        } else {
-            if (performanceTextScale(i) < Math.PI) {
-                return "start"
-            } else if (performanceTextScale(i) > Math.PI) {
-                return "end"
-            } else {
-                return "middle"
-            }
-        }
+    const getTextAnchor = (angle: number) => {
+        return "middle"
     }
 
-    const getTransform = (i) => {
-        const angle = performanceTextScale(i) * (180 / Math.PI)
-        return `rotate(${0}, ${
-            Math.sin(performanceTextScale(i)) * (outerRadius + 40)
-        }, ${
-            -Math.cos(performanceTextScale(i)) * (outerRadius + 40)
-        }) translate(0, 10)`
+    const getTransformLabel = (i: number) => {
+        const angle = performanceTextScale(String(i))
+        const rotate = `rotate(${(angle * 180) / Math.PI})`
+        const translate = `translate(${0}, ${-outerRadius - 30})`
+        return `${rotate} ${translate}`
+    }
+
+    const getTransformValue = (i: number) => {
+        const angle = performanceTextScale(String(i))
+        const rotate = `rotate(${(angle * 180) / Math.PI})`
+        const translate = `translate(${0}, ${-outerRadius - 3})`
+        return `${rotate} ${translate}`
     }
 
     performanceGroup
@@ -336,19 +331,13 @@ function render(
         .data((d) => Object.entries(d.localMetric))
         .join("text")
         .attr("class", "performanceLabel font-serif")
-        .attr("text-anchor", (_d, i) => getTextAnchor(i))
+        .attr("text-anchor", (_d, i) =>
+            getTextAnchor(performanceTextScale(String(i)))
+        )
         .attr("fill", semiGlobalLocalSturctureColor.textColor)
         .attr("stroke", "none")
         .attr("font-size", "1.2rem")
-        .attr("transform", (_d, i) => getTransform(i))
-        .attr(
-            "x",
-            (_d, i) => Math.sin(performanceTextScale(i)) * (outerRadius + 40)
-        )
-        .attr(
-            "y",
-            (_d, i) => -Math.cos(performanceTextScale(i)) * (outerRadius + 40)
-        )
+        .attr("transform", (_d, i) => getTransformLabel(i))
         .text((d) => d[0].charAt(0).toUpperCase() + d[0].slice(1))
 
     performanceGroup
@@ -356,21 +345,13 @@ function render(
         .data((d) => Object.entries(d.localMetric))
         .join("text")
         .attr("class", "performanceText")
-        .attr("text-anchor", (_d, i) => getTextAnchor(i))
+        .attr("text-anchor", (_d, i) =>
+            getTextAnchor(performanceTextScale(String(i)))
+        )
+        .attr("transform", (_d, i) => getTransformValue(i))
         .attr("fill", semiGlobalLocalSturctureColor.textColor)
         .attr("stroke", "none")
         .attr("font-size", "1rem")
-        .attr("transform", (_d, i) =>
-            getTransform(i).replace("translate(0, 10)", "translate(0, 35)")
-        )
-        .attr(
-            "x",
-            (_d, i) => Math.sin(performanceTextScale(i)) * (outerRadius + 40)
-        )
-        .attr(
-            "y",
-            (_d, i) => -Math.cos(performanceTextScale(i)) * (outerRadius + 40)
-        )
         .text((d) => roundToPercentage(d[1]))
 
     const arc = d3
