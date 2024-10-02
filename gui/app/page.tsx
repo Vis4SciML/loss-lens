@@ -7,6 +7,7 @@ import { atom, useAtom } from "jotai"
 import { siteConfig } from "@/config/site"
 import { systemConfigAtom } from "@/lib/store"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
     Select,
     SelectContent,
@@ -14,6 +15,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
 import { Icons } from "@/components/icons"
 import GlobalModule from "@/components/visualization/GlobalModule"
 
@@ -71,6 +73,10 @@ export default function IndexPage() {
         selectedCaseStudyUIAtom
     )
     const [systemConfigs, setSystemConfigs] = useAtom(systemConfigAtom)
+    const [showPerformance, setShowPerformance] = useState(false)
+    const [showHessian, setShowHessian] = useState(false)
+    const [showPerformanceLabels, setShowPerformanceLabels] = useState(false)
+    const [lossRange, setLossRange] = useState([0, 100])
 
     const handleClick = () => {
         setSystemConfigs((prev) => ({
@@ -134,6 +140,82 @@ export default function IndexPage() {
                                         >
                                             <Icons.chevronLeft className="h-5 w-5" />
                                         </Button>
+                                    </div>
+                                    <div className="w-full py-2 text-xs">
+                                        <div className="mb-2 font-serif text-sm font-bold">
+                                            Global View Settings
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <label
+                                                htmlFor="showPerformance"
+                                                className="mr-2"
+                                            >
+                                                Show Performance
+                                            </label>
+                                            <Checkbox
+                                                id="showPerformance"
+                                                checked={showPerformance}
+                                                onCheckedChange={(checked) =>
+                                                    setShowPerformance(
+                                                        checked === true
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                        <div className="mt-2 flex items-center justify-between">
+                                            <label
+                                                htmlFor="showHessian"
+                                                className="mr-2"
+                                            >
+                                                Show Hessian
+                                            </label>
+                                            <Checkbox
+                                                id="showHessian"
+                                                checked={showHessian}
+                                                onCheckedChange={(checked) =>
+                                                    setShowHessian(
+                                                        checked === true
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                        <div className="mt-2 flex items-center justify-between">
+                                            <label
+                                                htmlFor="showPerformanceLabels"
+                                                className="mr-2"
+                                            >
+                                                Show Performance Labels
+                                            </label>
+                                            <Checkbox
+                                                id="showPerformanceLabels"
+                                                checked={showPerformanceLabels}
+                                                onCheckedChange={(checked) =>
+                                                    setShowPerformanceLabels(
+                                                        checked === true
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                        <div className="mt-4">
+                                            <label
+                                                htmlFor="lossRange"
+                                                className="mb-2 block"
+                                            >
+                                                Loss Range
+                                            </label>
+                                            <Slider
+                                                id="lossRange"
+                                                value={lossRange}
+                                                onValueChange={setLossRange}
+                                                min={0}
+                                                max={100}
+                                                step={1}
+                                            />
+                                            <div className="mt-2 flex justify-between">
+                                                <span>{lossRange[0]}</span>
+                                                <span>{lossRange[1]}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
