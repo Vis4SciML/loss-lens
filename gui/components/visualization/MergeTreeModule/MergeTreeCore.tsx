@@ -14,7 +14,7 @@ interface MergeTreeCoreProp {
 function calculatePadding(width: number, height: number) {
     return {
         top: height * 0.02,
-        right: width * 0.25,
+        right: width * 0.3,
         bottom: height * 0.1,
         left: width * 0.25,
     }
@@ -93,6 +93,16 @@ function render(
     //   .attr('stroke-width', 1)
     //   .attr('opacity', 1)
     //
+
+    // Add y-axis on the right side with sparse, scientific ticks
+    const yAxis = d3.axisRight(yScale)
+        .ticks(5)
+        .tickFormat(d3.format(".2e"))
+
+    svg.append("g")
+        .attr("class", "y-axis")
+        .attr("transform", `translate(${w + 15}, 0)`)
+        .call(yAxis)
 }
 
 export default function MergeTreeCore({

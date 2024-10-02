@@ -472,7 +472,7 @@ function render(
         .attr("width", width - 20)
         .attr("height", 160)
         .append("xhtml:div")
-        .style("background", "white")
+        // .style("background", "white")
         .style("border", "1px solid black")
         .style("padding", "5px")
         .style("font-size", "12px")

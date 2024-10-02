@@ -91,59 +91,65 @@ export default function IndexPage() {
     }
     return (
         <section className="p-4">
-            <div className="fixed left-4 top-4 z-50">
-                {isControlPanelOpen ? (
-                    <div className="rounded-sm bg-white p-2">
-                        <div className="flex flex-col items-start">
-                            <div className="font-serif text-xl font-extrabold">
-                                {siteConfig.name}
-                            </div>
-                            <div className="w-36 text-sm">
-                                <Select onValueChange={setSelectedCaseStudyUI}>
-                                    <SelectTrigger id="framework">
-                                        <SelectValue placeholder="Select Case Study" />
-                                    </SelectTrigger>
-                                    <SelectContent
-                                        className="w-40"
-                                        position="popper"
-                                    >
-                                        {caseStudyItems}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="flex w-full justify-between">
-                                <Button
-                                    size="xs"
-                                    className="rounded-sm"
-                                    variant="outline"
-                                    onClick={handleClick}
-                                >
-                                    Apply
-                                    {/* <Icons.play className="h-5 w-5" /> */}
-                                </Button>
-                                <Button
-                                    size="xs"
-                                    variant="ghost"
-                                    onClick={toggleControlPanel}
-                                >
-                                    <Icons.chevronLeft className="h-5 w-5" />
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={toggleControlPanel}
-                        className="rounded-sm"
-                    >
-                        <Icons.chevronRight className="h-5 w-5" />
-                    </Button>
-                )}
-            </div>
             <div className="grid grid-cols-12">
-                <div className="col-span-2 h-[calc(100vh-4rem)]"></div>
+                <div className="col-span-2 h-[calc(100vh-3rem)]">
+                    <div className="">
+                        {isControlPanelOpen ? (
+                            <div className="w-full rounded-sm border border-gray-200 p-2">
+                                <div className="flex flex-col items-start">
+                                    <div className="font-serif text-xl font-extrabold">
+                                        {siteConfig.name}
+                                    </div>
+                                    <div className="w-full py-1 text-sm">
+                                        <Select
+                                            onValueChange={
+                                                setSelectedCaseStudyUI
+                                            }
+                                        >
+                                            <SelectTrigger id="framework">
+                                                <SelectValue placeholder="Select Case Study" />
+                                            </SelectTrigger>
+                                            <SelectContent
+                                                className="w-40"
+                                                position="popper"
+                                            >
+                                                {caseStudyItems}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex w-full justify-between">
+                                        <Button
+                                            size="xs"
+                                            className="w-full rounded-sm"
+                                            variant="outline"
+                                            onClick={handleClick}
+                                        >
+                                            Apply
+                                            {/* <Icons.play className="h-5 w-5" /> */}
+                                        </Button>
+                                        <Button
+                                            size="xs"
+                                            variant="ghost"
+                                            onClick={toggleControlPanel}
+                                        >
+                                            <Icons.chevronLeft className="h-5 w-5" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={toggleControlPanel}
+                                className="rounded-sm"
+                            >
+                                <Icons.chevronRight className="h-5 w-5" />
+                            </Button>
+                        )}
+                    </div>
+                </div>
+
                 <div className="col-span-10 h-[calc(100vh-3rem)]">
                     <GlobalModuleNoSSR height={800} width={1200} />
                     <LocalStructureNoSSR height={500} width={500} />
