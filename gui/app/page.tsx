@@ -15,14 +15,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
 import { Icons } from "@/components/icons"
-import GlobalModule from "@/components/visualization/GlobalModule"
-
-const SemiGlobalLocalModuleNoSSR = dynamic(
-    () => import("@/components/visualization/SemiGlobalLocalModule"),
-    { ssr: false }
-)
 
 const GlobalModuleNoSSR = dynamic(
     () => import("@/components/visualization/GlobalModule"),
@@ -220,6 +213,7 @@ export default function IndexPage() {
                         showHessian={showHessian}
                         showPerformanceLabels={showPerformanceLabels}
                     />
+
                     <LocalStructureNoSSR height={500} width={500} />
                 </div>
             </div>

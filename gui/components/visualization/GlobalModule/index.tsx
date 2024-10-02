@@ -1,3 +1,4 @@
+"use client"
 import { useAtom } from "jotai"
 
 import {
@@ -115,7 +116,9 @@ export default function GlobalModule({
                                     modelMetaData={modelMetaData}
                                     showPerformance={showPerformance}
                                     showHessian={showHessian}
-                                    showPerformanceLabels={showPerformanceLabels}
+                                    showPerformanceLabels={
+                                        showPerformanceLabels
+                                    }
                                 />
                             </div>
                         )
