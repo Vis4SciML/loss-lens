@@ -3,57 +3,54 @@
 import { useAtom } from "jotai"
 
 import {
-  fetchCheckpointLossLandscapeDataAtomFamily,
-  modelIDLoadableAtom,
+    fetchCheckpointLossLandscapeDataAtomFamily,
+    modelIDLoadableAtom,
 } from "@/lib/store"
 
 import LossContourCore from "./LossContour"
 
 interface LossLandscapeProps {
-  height: number
-  width: number
-  checkpointId: string
+    dimensions: { width: number; height: number }
+    checkpointId: string
 }
 
 export default function LossLandscape({
-  height,
-  width,
-  checkpointId,
+    dimensions,
+    checkpointId,
 }: LossLandscapeProps) {
-  const [lossLandscapeDataLoader] = useAtom(
-    fetchCheckpointLossLandscapeDataAtomFamily(checkpointId)
-  )
-  const [globalInfoLoader] = useAtom(modelIDLoadableAtom)
+    const [lossLandscapeDataLoader] = useAtom(
+        fetchCheckpointLossLandscapeDataAtomFamily(checkpointId)
+    )
+    const [globalInfoLoader] = useAtom(modelIDLoadableAtom)
 
-  if (
-    lossLandscapeDataLoader.state === "hasError" ||
-    globalInfoLoader.state === "hasError"
-  ) {
-    return <div>error</div>
-  } else if (
-    lossLandscapeDataLoader.state === "loading" ||
-    globalInfoLoader.state === "loading"
-  ) {
-    return <div>loading</div>
-  } else {
     if (
-      lossLandscapeDataLoader.data === null ||
-      globalInfoLoader.data === null
+        lossLandscapeDataLoader.state === "hasError" ||
+        globalInfoLoader.state === "hasError"
     ) {
-      return (
-        <div className={" h-[900px] w-full text-center "}>
-          LossContour is empty
-        </div>
-      )
+        return <div>error</div>
+    } else if (
+        lossLandscapeDataLoader.state === "loading" ||
+        globalInfoLoader.state === "loading"
+    ) {
+        return <div>loading</div>
     } else {
-      return (
-        <LossContourCore
-          height={height}
-          width={width}
-          data={lossLandscapeDataLoader.data}
-          globalInfo={globalInfoLoader.data}
-        />
-      )
+        if (
+            lossLandscapeDataLoader.data === null ||
+            globalInfoLoader.data === null
+        ) {
+            return (
+                <div className="flex h-full w-full items-center justify-center text-gray-500">
+                    LossContour is empty
+                </div>
+            )
+        } else {
+            return (
+                <LossContourCore
+                    dimensions={dimensions}
+                    data={lossLandscapeDataLoader.data}
+                    globalInfo={globalInfoLoader.data}
+                />
+            )
+        }
     }
-  }
 }

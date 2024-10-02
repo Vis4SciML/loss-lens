@@ -73,7 +73,6 @@ function render(
         },
         {}
     )
-    console.log("modelMetaData", modelMetaData)
 
     const tooltip = d3
         .select("#tooltip")
@@ -487,6 +486,19 @@ function render(
                 .map(([key, value]) => `<b>${key}:</b> ${value}`)
                 .join("<br>")
         )
+
+    // Add label "Global Structure" to the top left of the svg
+    if (svgbase.select(".global-structure-label").empty()) {
+        svgbase
+            .append("text")
+            .attr("class", "global-structure-label")
+            .attr("x", 10)
+            .attr("y", 20)
+            .attr("font-size", "14px")
+            .attr("font-weight", "normal")
+            .attr("fill", "black")
+            .text("Global Structure")
+    }
 }
 
 export default function GlobalCore({

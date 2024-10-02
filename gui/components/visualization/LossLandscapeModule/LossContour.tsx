@@ -7,230 +7,195 @@ import { GlobalInfo, LossLandscape } from "@/types/losslens"
 import { lossContourColor } from "@/styles/vis-color-scheme"
 
 interface LossContourCoreProp {
-  data: LossLandscape | Promise<LossLandscape> | null
-  height: number
-  width: number
-  globalInfo: GlobalInfo
+    data: LossLandscape
+    dimensions: { width: number; height: number }
+    globalInfo: GlobalInfo
+}
+
+function calculatePadding(width: number, height: number) {
+    return {
+        top: height * 0.02,
+        right: width * 0.05,
+        bottom: height * 0.01,
+        left: width * 0.05,
+    }
 }
 
 function render(
-  svgRef: React.RefObject<SVGSVGElement>,
-  wraperRef: React.RefObject<HTMLDivElement>,
-  data: LossLandscape,
-  globalInfo: GlobalInfo
+    svgRef: React.RefObject<SVGSVGElement>,
+    wrapperRef: React.RefObject<HTMLDivElement>,
+    data: LossLandscape,
+    globalInfo: GlobalInfo,
+    dimensions: { width: number; height: number }
 ) {
-  const divElement = wraperRef.current
-  const width = divElement?.clientWidth ?? 300
-  const height = divElement?.clientHeight ?? 300
+    const { width, height } = dimensions
 
-  const margin = {
-    top: 30,
-    right: 0,
-    bottom: Math.abs(height - width) - 5,
-    left: 20,
-  }
-  const h = height - margin.top - margin.bottom
-  const w = width - margin.left - margin.right
+    const padding = calculatePadding(width, height)
+    const h = height - padding.top - padding.bottom
+    const w = width - padding.left - padding.right
 
-  const globalUpperBound = globalInfo.lossBounds.upperBound
-  const globalLowerBound = globalInfo.lossBounds.lowerBound
-  const upperBound = data.grid.flat().reduce((a, b) => Math.max(a, b))
-  const lowerBound = data.grid.flat().reduce((a, b) => Math.min(a, b))
+    const globalUpperBound = globalInfo.lossBounds.upperBound
+    const globalLowerBound = globalInfo.lossBounds.lowerBound
+    const upperBound = data.grid.flat().reduce((a, b) => Math.max(a, b))
+    const lowerBound = data.grid.flat().reduce((a, b) => Math.min(a, b))
 
-  const svg = d3
-    .select(svgRef.current)
-    .attr("width", width)
-    .attr("height", height)
-    .select("g")
-    .attr("transform", `translate(${margin.left},${margin.top})`)
+    const svg = d3
+        .select(svgRef.current)
+        .attr("width", width)
+        .attr("height", height)
+        .select("g")
+        .attr("transform", `translate(${padding.left},${padding.top})`)
 
-  const lengthOfGrid = data.grid.length
-  const q = w / lengthOfGrid
+    const lengthOfGrid = data.grid.length
+    const q = w / lengthOfGrid
 
-  // const x0 = -q / 2
-  // const x1 = w + 28 + q
-  // const y0 = -q / 2
-  // const y1 = h + q
-  // const n = Math.ceil((x1 - x0) / q)
-  // const m = Math.ceil((y1 - y0) / q)
-
-  const thresholdArray = []
-  for (let i = 0; i < 30; i++) {
-    const threshold = lowerBound + (i / 29) * (upperBound - lowerBound)
-    thresholdArray.push(threshold)
-  }
-
-  const customizedColors = lossContourColor.gridColor
-
-  const domainSteps = customizedColors.map((_color, i) => {
-    return (
-      globalUpperBound - (i * (globalUpperBound - globalLowerBound)) / customizedColors.length
-    )
-  })
-
-  const color = d3
-    .scaleLinear()
-    .domain(domainSteps)
-    .range(customizedColors.reverse())
-
-  // const color = d3.scaleSequentialLog(
-  //   d3.extent(thresholdArray),
-  //   d3.interpolateMagma
-  // )
-  const gridX = -q
-  const gridY = -q
-  const gridK = q
-
-  const transform = ({ type, value, coordinates }) => {
-    return {
-      type,
-      value,
-      coordinates: coordinates.map((rings) => {
-        return rings.map((points) => {
-          return points.map(([x, y]) => [gridX + gridK * x, gridY + gridK * y])
-        })
-      }),
+    const thresholdArray = []
+    for (let i = 0; i < 30; i++) {
+        const threshold = lowerBound + (i / 29) * (upperBound - lowerBound)
+        thresholdArray.push(threshold)
     }
-  }
 
-  const contours = d3
-    .contours()
-    .size([40, 40])
-    .thresholds(thresholdArray)(data.grid.flat())
-    .map(transform)
+    const customizedColors = lossContourColor.gridColor
 
-  svg
-    .selectAll("path")
-    .data(contours)
-    .join("path")
-    .attr("fill", (d) => color(d.value))
-    .attr("stroke", "#333")
-    .attr("stroke-opacity", 0.5)
-    .attr("stroke-width", 0.5)
-    .attr("d", d3.geoPath())
+    const domainSteps = customizedColors.map((_color, i) => {
+        return (
+            globalUpperBound -
+            (i * (globalUpperBound - globalLowerBound)) /
+                customizedColors.length
+        )
+    })
 
-  const legend = svg.selectAll(".legend").data([1])
-  let lg = svg
-    .append("defs")
-    .append("linearGradient")
-    .attr("id", "lossgrad")
-    .attr("x1", "0%")
-    .attr("x2", "100%")
-    .attr("y1", "0%")
-    .attr("y2", "0%")
+    const color = d3
+        .scaleLinear()
+        .domain(domainSteps)
+        .range(customizedColors.reverse())
 
-  lg.selectAll("stop")
-    .data(customizedColors.reverse())
-    .join("stop")
-    .attr("offset", (_d, i) => (i * 100) / customizedColors.length + "%")
-    .style("stop-color", (d) => d)
-    .style("stop-opacity", 1)
+    const gridX = -q
+    const gridY = -q
+    const gridK = q
 
-  legend
-    .join("rect")
-    .attr("class", "legend")
-    .attr("y", h + 3)
-    .attr("x", 40)
-    .attr("height", 7)
-    .attr("width", w - 45)
-    .attr("stroke", "#666")
-    .attr("fill", "url(#lossgrad)")
+    const transform = ({ type, value, coordinates }) => {
+        return {
+            type,
+            value,
+            coordinates: coordinates.map((rings) => {
+                return rings.map((points) => {
+                    return points.map(([x, y]) => [
+                        gridX + gridK * x,
+                        gridY + gridK * y,
+                    ])
+                })
+            }),
+        }
+    }
 
-  const legendScale = d3
-    .scaleLinear()
-    .range([0, w - 45])
-    .domain([globalLowerBound, globalUpperBound])
+    const contours = d3
+        .contours()
+        .size([40, 40])
+        .thresholds(thresholdArray)(data.grid.flat())
+        .map(transform)
 
-  const legendAxis = svg.selectAll(".legendAxis").data([data])
+    svg.selectAll("path")
+        .data(contours)
+        .join("path")
+        .attr("fill", (d) => color(d.value))
+        .attr("stroke", "#333")
+        .attr("stroke-opacity", 0.5)
+        .attr("stroke-width", 0.5)
+        .attr("d", d3.geoPath())
 
-  legendAxis
-    .join("g")
-    .attr("class", "legendAxis")
-    .attr("transform", `translate(40, ${h + 10})`)
-    .call(d3.axisBottom(legendScale).ticks(4).tickFormat(d3.format(".2s")))
+    const legend = svg.selectAll(".legend").data([1])
+    let lg = svg
+        .append("defs")
+        .append("linearGradient")
+        .attr("id", "lossgrad")
+        .attr("x1", "0%")
+        .attr("x2", "100%")
+        .attr("y1", "0%")
+        .attr("y2", "0%")
 
-  // legendAxis.select(".domain").attr("display", "none")
-  legendAxis
-    .selectAll(".tick text")
-    .attr("font-size", "0.8rem")
-    .attr("fill", "#000")
-    .classed("font-serif", true)
-    .attr("text-anchor", "middle")
-  legendAxis.selectAll(".tick line").attr("stroke", "#000")
+    lg.selectAll("stop")
+        .data(customizedColors.reverse())
+        .join("stop")
+        .attr("offset", (_d, i) => (i * 100) / customizedColors.length + "%")
+        .style("stop-color", (d) => d)
+        .style("stop-opacity", 1)
 
-  legendAxis
-    .selectAll(".legendLabel")
-    .data([1])
-    .join("text")
-    .attr("class", "legendLabel font-serif")
-    .attr("x", -25)
-    .attr("y", 5)
-    .attr("font-size", "1rem")
-    .attr("font-weight", "semibold")
-    .attr("fill", "#000")
-    .text("Loss")
+    legend
+        .join("rect")
+        .attr("class", "legend")
+        .attr("y", h - 7)
+        .attr("x", 35)
+        .attr("height", 7)
+        .attr("width", w - 45)
+        .attr("stroke", "#666")
+        .attr("fill", "url(#lossgrad)")
 
-  svg
-    .selectAll(".figure-label")
-    .data([1])
-    .join("text")
-    .attr("class", "figure-label font-serif")
-    .attr("x", w / 2)
-    .attr("y", h + 45)
-    .attr("font-size", "1rem")
-    .attr("font-weight", "semi-bold")
-    .attr("text-anchor", "middle")
-    .text("Loss Contour [" + data.modeId + "]")
+    const legendScale = d3
+        .scaleLinear()
+        .range([0, w - 45])
+        .domain([globalLowerBound, globalUpperBound])
+
+    const legendAxis = svg.selectAll(".legendAxis").data([data])
+
+    legendAxis
+        .join("g")
+        .attr("class", "legendAxis")
+        .attr("transform", `translate(35, ${h})`)
+        .call(d3.axisTop(legendScale).ticks(4).tickFormat(d3.format(".2s")))
+
+    legendAxis
+        .selectAll(".tick text")
+        .attr("font-size", "0.7rem")
+        .attr("fill", "#000")
+        .attr("text-anchor", "middle")
+    legendAxis.selectAll(".tick line").attr("stroke", "#000")
+
+    legendAxis
+        .selectAll(".legendLabel")
+        .data([1])
+        .join("text")
+        .attr("class", "legendLabel")
+        .attr("x", -20)
+        .attr("y", 0)
+        .attr("font-size", "0.8rem")
+        .attr("font-weight", "semibold")
+        .attr("fill", "#000")
+        .text("Loss")
 }
 
 export default function LossContourCore({
-  width,
-  height,
-  data,
-  globalInfo,
+    dimensions,
+    data,
+    globalInfo,
 }: LossContourCoreProp): React.JSX.Element {
-  const svg = React.useRef<SVGSVGElement>(null)
-  const wraperRef = React.useRef<HTMLDivElement>(null)
+    const svg = React.useRef<SVGSVGElement>(null)
+    const wrapperRef = React.useRef<HTMLDivElement>(null)
 
-  React.useEffect(() => {
-    // Function to update the D3 chart based on the div dimensions
-    const updateChart = () => {
-      // Get the div dimensions using the ref
-      const divElement = wraperRef.current
-      const width = divElement?.clientWidth
-      const height = divElement?.clientHeight
+    React.useEffect(() => {
+        if (wrapperRef.current && svg.current && data) {
+            const wrapperWidth = wrapperRef.current.clientWidth
+            const wrapperHeight = wrapperRef.current.clientHeight
+            const size = Math.min(wrapperWidth, wrapperHeight)
 
-      console.log("updateChart")
-      console.log(width)
-      console.log(height)
+            render(svg, wrapperRef, data, globalInfo, {
+                width: size,
+                height: size,
+            })
+        }
+    }, [data, dimensions, globalInfo])
 
-      // Use the dimensions to render or update your D3 chart
-      // Example: Update D3 chart with new dimensions
-      const svgE = d3.select(svg.current)
-      svgE.attr("width", width).attr("height", height)
-
-      // Your D3 rendering logic here...
-    }
-
-    // Call the updateChart function initially and on window resize
-    updateChart()
-    window.addEventListener("resize", updateChart)
-
-    // Clean up the event listener on component unmount
-    return () => {
-      window.removeEventListener("resize", updateChart)
-    }
-  }, [])
-
-  React.useEffect(() => {
-    render(svg, wraperRef, data, globalInfo)
-  }, [data, width, height, globalInfo])
-
-  return (
-    <div ref={wraperRef} className="h-full w-full">
-      <svg ref={svg}>
-        <g></g>
-      </svg>
-    </div>
-  )
+    return (
+        <div
+            ref={wrapperRef}
+            className="flex h-full w-full flex-col items-center justify-start"
+        >
+            <div className="text-center text-sm">
+                Local Structure - Loss Contour
+            </div>
+            <svg ref={svg}>
+                <g></g>
+            </svg>
+        </div>
+    )
 }

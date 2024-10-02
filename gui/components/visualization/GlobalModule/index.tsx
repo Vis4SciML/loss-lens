@@ -29,22 +29,55 @@ export default function GlobalModule({
     const canvasHeight = height - 170
     const canvasWidth = width - 30
 
-    if (
-        loader.state === "hasError" ||
-        modelMetaDataLoader.state === "hasError"
-    ) {
-        return <div>error</div>
-    } else if (
-        loader.state === "loading" ||
-        modelMetaDataLoader.state === "loading"
-    ) {
-        return <div>loading</div>
-    } else {
-        if (loader.data === null || !modelMetaDataLoader.data) {
+    const renderContent = () => {
+        if (
+            loader.state === "hasError" ||
+            modelMetaDataLoader.state === "hasError"
+        ) {
             return (
-                <div className="grid grid-cols-11 ">
-                    <div className="col-span-11 flex h-full items-center justify-center rounded border text-gray-500">
-                        please select a case study to start
+                <div className="col-span-10 grid grid-cols-2">
+                    <div className="col-span-1 aspect-square p-1">
+                        <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
+                            Error loading data
+                        </div>
+                    </div>
+                    <div className="col-span-1 aspect-square p-1">
+                        <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
+                            Error loading data
+                        </div>
+                    </div>
+                </div>
+            )
+        } else if (
+            loader.state === "loading" ||
+            modelMetaDataLoader.state === "loading"
+        ) {
+            return (
+                <div className="col-span-10 grid grid-cols-2">
+                    <div className="col-span-1 aspect-square p-1">
+                        <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
+                            Loading...
+                        </div>
+                    </div>
+                    <div className="col-span-1 aspect-square p-1">
+                        <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
+                            Loading...
+                        </div>
+                    </div>
+                </div>
+            )
+        } else if (loader.data === null || !modelMetaDataLoader.data) {
+            return (
+                <div className="col-span-10 grid grid-cols-2">
+                    <div className="col-span-1 aspect-square p-1">
+                        <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
+                            please select a case study to start
+                        </div>
+                    </div>
+                    <div className="col-span-1 aspect-square p-1">
+                        <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
+                            please select a case study to start
+                        </div>
                     </div>
                 </div>
             )
@@ -52,43 +85,36 @@ export default function GlobalModule({
             const modelList = loader.data.modelList
             const modelMetaDataList = modelMetaDataLoader.data.data
 
-            const viewComponentList = modelList.map(
-                (modelId: string, modelIdIndex: number) => {
-                    const modelMetaData = modelMetaDataList[modelIdIndex]
-                    return (
-                        <div
-                            key={modelId}
-                            className="col-span-5 aspect-square p-1"
-                        >
-                            <GlobalCore
-                                height={canvasHeight / 2}
-                                width={canvasWidth}
-                                data={loader.data}
-                                selectedCheckPointIdList={
-                                    selectedCheckPointIdList
-                                }
-                                updateSelectedModelIdModeId={updateCheckpointId}
-                                modelId={modelId}
-                                modelIdIndex={modelIdIndex}
-                                modelMetaData={modelMetaData}
-                            />
-                        </div>
-                    )
-                }
-            )
-
             return (
-                <div className="grid grid-cols-11">
-                    <div className="col-span-1 flex h-full items-center justify-center font-serif text-lg">
-                        Global Structure
-                    </div>
-                    <div className="col-span-10">
-                        <div className="grid grid-cols-10">
-                            {viewComponentList}
-                        </div>
-                    </div>
+                <div className="col-span-10 grid grid-cols-2">
+                    {modelList.map((modelId: string, modelIdIndex: number) => {
+                        const modelMetaData = modelMetaDataList[modelIdIndex]
+                        return (
+                            <div
+                                key={modelId}
+                                className="col-span-1 aspect-square p-1"
+                            >
+                                <GlobalCore
+                                    height={canvasHeight / 2}
+                                    width={canvasWidth / 2}
+                                    data={loader.data}
+                                    selectedCheckPointIdList={
+                                        selectedCheckPointIdList
+                                    }
+                                    updateSelectedModelIdModeId={
+                                        updateCheckpointId
+                                    }
+                                    modelId={modelId}
+                                    modelIdIndex={modelIdIndex}
+                                    modelMetaData={modelMetaData}
+                                />
+                            </div>
+                        )
+                    })}
                 </div>
             )
         }
     }
+
+    return <div className="grid grid-cols-10">{renderContent()}</div>
 }

@@ -93,12 +93,12 @@ export default function IndexPage() {
         <section className="p-4">
             <div className="fixed left-4 top-4 z-50">
                 {isControlPanelOpen ? (
-                    <div className="rounded-lg bg-white p-4 shadow-md">
+                    <div className="rounded-sm bg-white p-2">
                         <div className="flex flex-col items-start">
-                            <div className="mb-4 font-serif text-3xl font-extrabold">
+                            <div className="font-serif text-xl font-extrabold">
                                 {siteConfig.name}
                             </div>
-                            <div className="mb-4 w-40">
+                            <div className="w-36 text-sm">
                                 <Select onValueChange={setSelectedCaseStudyUI}>
                                     <SelectTrigger id="framework">
                                         <SelectValue placeholder="Select Case Study" />
@@ -114,10 +114,12 @@ export default function IndexPage() {
                             <div className="flex w-full justify-between">
                                 <Button
                                     size="xs"
-                                    variant="ghost"
+                                    className="rounded-sm"
+                                    variant="outline"
                                     onClick={handleClick}
                                 >
-                                    <Icons.play className="h-5 w-5" />
+                                    Apply
+                                    {/* <Icons.play className="h-5 w-5" /> */}
                                 </Button>
                                 <Button
                                     size="xs"
@@ -134,19 +136,18 @@ export default function IndexPage() {
                         size="sm"
                         variant="outline"
                         onClick={toggleControlPanel}
-                        className="rounded-full"
+                        className="rounded-sm"
                     >
                         <Icons.chevronRight className="h-5 w-5" />
                     </Button>
                 )}
             </div>
             <div className="grid grid-cols-12">
-                <div className="col-span-1 h-[calc(100vh-4rem)]"></div>
-                <div className="col-span-10 h-[calc(100vh-4rem)]">
+                <div className="col-span-2 h-[calc(100vh-4rem)]"></div>
+                <div className="col-span-10 h-[calc(100vh-3rem)]">
                     <GlobalModuleNoSSR height={800} width={1200} />
-                    <LocalStructureNoSSR height={400} width={400} />
+                    <LocalStructureNoSSR height={500} width={500} />
                 </div>
-                <div className="col-span-1 h-[calc(100vh-4rem)]"></div>
             </div>
         </section>
     )
