@@ -45,6 +45,7 @@ function render(
     const h = height - margin.top - margin.bottom
     const w = width - margin.left - margin.right
 
+    console.log("data", data)
     svgbase.attr("width", width).attr("height", height)
     const { nodes: wholeNodes, links: wholeLinks, modelList } = data
 
@@ -461,12 +462,17 @@ function render(
                 .style("cursor", "default")
         })
         .on("click", (_event, d) => {
+            svgbase
+                .selectAll(".outerRing")
+                .attr("stroke-width", 1)
+                .attr("stroke", semiGlobalLocalSturctureColor.strokeColor)
+            console.log("click", d.modelId + "-" + d.modeId)
             svgbase.selectAll(".node").style("opacity", 1)
             svgbase.selectAll(".link").style("stroke-opacity", 1)
             svgbase
-                .selectAll(`[id^=outerRing-${d.modelId}]`)
-                .attr("stroke-width", 1)
-                .attr("stroke", semiGlobalLocalSturctureColor.strokeColor)
+                .selectAll(`#outerRing-${d.modelId}-${d.modeId}`)
+                .attr("stroke-width", 4)
+                .attr("stroke", modelColorMap[d.modelId])
             updateSelectedModelIdModeId(
                 modelIdIndex,
                 `${d.modelId}-${d.modeId}`

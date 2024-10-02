@@ -196,26 +196,6 @@ export default function IndexPage() {
                                                 }
                                             />
                                         </div>
-                                        <div className="mt-4">
-                                            <label
-                                                htmlFor="lossRange"
-                                                className="mb-2 block"
-                                            >
-                                                Loss Range
-                                            </label>
-                                            <Slider
-                                                id="lossRange"
-                                                value={lossRange}
-                                                onValueChange={setLossRange}
-                                                min={0}
-                                                max={100}
-                                                step={1}
-                                            />
-                                            <div className="mt-2 flex justify-between">
-                                                <span>{lossRange[0]}</span>
-                                                <span>{lossRange[1]}</span>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -233,9 +213,9 @@ export default function IndexPage() {
                 </div>
 
                 <div className="col-span-10 h-[calc(100vh-3rem)]">
-                    <GlobalModuleNoSSR 
-                        height={800} 
-                        width={1200} 
+                    <GlobalModuleNoSSR
+                        height={800}
+                        width={1200}
                         showPerformance={showPerformance}
                         showHessian={showHessian}
                         showPerformanceLabels={showPerformanceLabels}

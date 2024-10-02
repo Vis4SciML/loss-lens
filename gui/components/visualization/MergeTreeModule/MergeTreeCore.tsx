@@ -69,10 +69,10 @@ function render(
         .range([h, 0])
         .domain(d3.extent([yMin, yMax]))
 
-    svg.selectAll("line")
+    svg.selectAll(".merge-tree-edge")
         .data(edges)
         .join("line")
-        .attr("class", data.id)
+        .attr("class", "merge-tree-edge")
         .attr("x1", (d) => xScale(d.sourceX))
         .attr("y1", (d) => yScale(d.sourceY))
         .attr("x2", (d) => xScale(d.targetX))
@@ -95,14 +95,21 @@ function render(
     //
 
     // Add y-axis on the right side with sparse, scientific ticks
-    const yAxis = d3.axisRight(yScale)
-        .ticks(5)
-        .tickFormat(d3.format(".2e"))
+    const yAxis = d3.axisRight(yScale).ticks(5).tickFormat(d3.format(".2e"))
 
-    svg.append("g")
-        .attr("class", "y-axis")
-        .attr("transform", `translate(${w + 15}, 0)`)
-        .call(yAxis)
+    if (svg.select(".y-axis").empty()) {
+        svg.append("g")
+            .attr("class", "y-axis")
+            .attr("transform", `translate(${w + 15}, 0)`)
+            .call(yAxis)
+            .append("text")
+            .attr("class", "y-axis-label")
+            .attr("fill", "black")
+            .attr("text-anchor", "end")
+            .attr("x", 30)
+            .attr("y", h)
+            .text("Loss")
+    }
 }
 
 export default function MergeTreeCore({
