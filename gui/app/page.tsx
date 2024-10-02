@@ -73,9 +73,9 @@ export default function IndexPage() {
         selectedCaseStudyUIAtom
     )
     const [systemConfigs, setSystemConfigs] = useAtom(systemConfigAtom)
-    const [showPerformance, setShowPerformance] = useState(false)
-    const [showHessian, setShowHessian] = useState(false)
-    const [showPerformanceLabels, setShowPerformanceLabels] = useState(false)
+    const [showPerformance, setShowPerformance] = useState(true)
+    const [showHessian, setShowHessian] = useState(true)
+    const [showPerformanceLabels, setShowPerformanceLabels] = useState(true)
     const [lossRange, setLossRange] = useState([0, 100])
 
     const handleClick = () => {
@@ -233,7 +233,13 @@ export default function IndexPage() {
                 </div>
 
                 <div className="col-span-10 h-[calc(100vh-3rem)]">
-                    <GlobalModuleNoSSR height={800} width={1200} />
+                    <GlobalModuleNoSSR 
+                        height={800} 
+                        width={1200} 
+                        showPerformance={showPerformance}
+                        showHessian={showHessian}
+                        showPerformanceLabels={showPerformanceLabels}
+                    />
                     <LocalStructureNoSSR height={500} width={500} />
                 </div>
             </div>

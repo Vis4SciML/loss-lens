@@ -19,6 +19,9 @@ interface GlobalCoreProp {
     modelId: string
     modelIdIndex: number
     modelMetaData: any
+    showPerformance: boolean
+    showHessian: boolean
+    showPerformanceLabels: boolean
 }
 
 function render(
@@ -29,7 +32,10 @@ function render(
     updateSelectedModelIdModeId: (index: number, id: string) => void,
     modelId: string,
     modelIdIndex: number,
-    modelMetaData: any
+    modelMetaData: any,
+    showPerformance: boolean,
+    showHessian: boolean,
+    showPerformanceLabels: boolean
 ) {
     const divElement = wraperRef.current
     const width = divElement?.clientWidth || 0
@@ -175,71 +181,6 @@ function render(
         .domain(d3.range(10).map(String))
         .range([0, 2 * Math.PI])
 
-    const node = svgbase
-        .selectAll(".nodes")
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 1)
-        .selectAll(".node")
-        .data(nodes)
-        .join("g")
-        .attr("class", "node")
-        .attr("id", (d) => `nodeGroup-${d.modelId}-${d.modeId}`)
-        .attr("transform", positionNode)
-
-    const performanceGroup = node
-        .selectAll(".performanceGroup")
-        .data((d) => [d])
-        .join("g")
-        .attr("class", "performanceGroup")
-
-    performanceGroup
-        .selectAll(".outerRing")
-        .data((d) => [d])
-        .join("circle")
-        .attr("class", "outerRing")
-        .attr("id", (d) => `outerRing-${d.modelId}-${d.modeId}`)
-        .attr("r", outerRadius + 22)
-        .attr("fill", semiGlobalLocalSturctureColor.itemBackgroundColor)
-        .attr("cx", 0)
-        .attr("cy", 0)
-        .attr("stroke", (d) =>
-            selectedCheckPointIdList[modelIdIndex] ===
-            `${d.modelId}-${d.modeId}`
-                ? "red"
-                : semiGlobalLocalSturctureColor.strokeColor
-        )
-        .attr("stroke-width", (d) =>
-            selectedCheckPointIdList[modelIdIndex] ===
-            `${d.modelId}-${d.modeId}`
-                ? 4
-                : 1
-        )
-
-    performanceGroup
-        .selectAll(".middleRing")
-        .data((d) => [d])
-        .join("circle")
-        .attr("class", "middleRing")
-        .attr("id", (d) => `middleRing-${d.modelId}-${d.modeId}`)
-        .attr("r", outerRadius + 2)
-        .attr("fill", semiGlobalLocalSturctureColor.itemInnerBackgroundColor)
-        .attr("cx", 0)
-        .attr("cy", 0)
-        .attr("stroke", semiGlobalLocalSturctureColor.strokeColor)
-
-    performanceGroup
-        .selectAll(".innerRing")
-        .data((d) => [d])
-        .join("circle")
-        .attr("class", "innerRing")
-        .attr("id", (d) => `innerRing-${d.modelId}-${d.modeId}`)
-        .attr("r", barScale(0))
-        .attr("fill", semiGlobalLocalSturctureColor.itemInnerBackgroundColor)
-        .attr("cx", 0)
-        .attr("cy", 0)
-        .attr("stroke", semiGlobalLocalSturctureColor.strokeColor)
-        .attr("stroke-width", 0.5)
-
     const performanceBarScale = d3
         .scaleLinear()
         .domain([0, 1])
@@ -262,6 +203,71 @@ function render(
         .outerRadius(outerRadius + 30)
         .startAngle((_d, i) => (i * (2 * Math.PI)) / numberOfMetrics)
         .endAngle((_d, i) => (i * (2 * Math.PI)) / numberOfMetrics)
+
+    const arc = d3
+        .arc()
+        .innerRadius((d) => barScale(Math.min(Number(d), 0)))
+        .outerRadius((d) => barScale(Math.max(Number(d), 0)))
+        .startAngle((_d, i) => barIndexScale(String(i)) ?? 0)
+        .endAngle(
+            (_d, i) => (barIndexScale(i) ?? 0) + barIndexScale.bandwidth()
+        )
+        .padAngle(1.5 / innerRadius)
+        .padRadius(innerRadius)
+
+    const node = svgbase
+        .selectAll(".nodes")
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 1)
+        .selectAll(".node")
+        .data(nodes)
+        .join("g")
+        .attr("class", "node")
+        .attr("id", (d) => `nodeGroup-${d.modelId}-${d.modeId}`)
+        .attr("transform", positionNode)
+
+    const localPropertyGroup = node
+        .selectAll(".localPropertyGroup")
+        .data((d) => [d])
+        .join("g")
+        .attr("class", "localPropertyGroup")
+
+    const performanceGroup = localPropertyGroup
+        .selectAll(".performanceGroup")
+        .data((d) => [d])
+        .join("g")
+        .attr("class", "performanceGroup")
+        .style("opacity", showPerformance ? 1 : 0)
+
+    const hessianGroup = localPropertyGroup
+        .selectAll(".hessianGroup")
+        .data((d) => [d])
+        .join("g")
+        .attr("class", "hessianGroup")
+        .style("opacity", showHessian ? 1 : 0)
+
+    const outerRing = performanceGroup
+        .selectAll(".outerRing")
+        .data((d) => [d])
+        .join("circle")
+        .attr("class", "outerRing")
+        .attr("id", (d) => `outerRing-${d.modelId}-${d.modeId}`)
+        .attr("r", outerRadius + 22)
+        .attr("fill", semiGlobalLocalSturctureColor.itemBackgroundColor)
+        .attr("cx", 0)
+        .attr("cy", 0)
+        .attr("stroke", (d) =>
+            selectedCheckPointIdList[modelIdIndex] ===
+            `${d.modelId}-${d.modeId}`
+                ? "red"
+                : semiGlobalLocalSturctureColor.strokeColor
+        )
+        .attr("stroke-width", (d) =>
+            selectedCheckPointIdList[modelIdIndex] ===
+            `${d.modelId}-${d.modeId}`
+                ? 4
+                : 1
+        )
 
     performanceGroup
         .selectAll(".performanceBar")
@@ -353,19 +359,27 @@ function render(
         .attr("font-size", "1rem")
         .text((d) => roundToPercentage(d[1]))
 
-    const arc = d3
-        .arc()
-        .innerRadius((d) => barScale(Math.min(Number(d), 0)))
-        .outerRadius((d) => barScale(Math.max(Number(d), 0)))
-        .startAngle((_d, i) => barIndexScale(i))
-        .endAngle((_d, i) => barIndexScale(i) + barIndexScale.bandwidth())
-        .padAngle(1.5 / innerRadius)
-        .padRadius(innerRadius)
+    hessianGroup
+        .selectAll(".middleRing")
+        .data((d) => [d])
+        .join("circle")
+        .attr("class", "middleRing")
+        .attr("id", (d) => `middleRing-${d.modelId}-${d.modeId}`)
+        .attr("r", outerRadius + 2)
+        .attr("fill", semiGlobalLocalSturctureColor.itemInnerBackgroundColor)
+        .attr("cx", 0)
+        .attr("cy", 0)
+        .attr("stroke", semiGlobalLocalSturctureColor.strokeColor)
 
-    node.selectAll(".bar")
-        .data((d) => d.localFlatness)
+    hessianGroup
+        .selectAll(".hessianBar")
+        .data((d) => {
+            const hessian = d.localFlatness
+            console.log("hessian", hessian)
+            return d.localFlatness
+        })
         .join("path")
-        .attr("class", "bar")
+        .attr("class", "hessianBar")
         .attr("data-index", (_d, i) => i + 1)
         .attr("fill", (d) =>
             d > 0 ? semiGlobalLocalSturctureColor.radioBarColor : "#cdcdcd"
@@ -391,7 +405,27 @@ function render(
             tooltip.style("visibility", "hidden")
         })
 
-    node.selectAll(".circle")
+    const modelGroup = localPropertyGroup
+        .selectAll(".modelGroup")
+        .data((d) => [d])
+        .join("g")
+        .attr("class", "modelGroup")
+
+    modelGroup
+        .selectAll(".innerRing")
+        .data((d) => [d])
+        .join("circle")
+        .attr("class", "innerRing")
+        .attr("id", (d) => `innerRing-${d.modelId}-${d.modeId}`)
+        .attr("r", barScale(0))
+        .attr("fill", semiGlobalLocalSturctureColor.itemInnerBackgroundColor)
+        .attr("cx", 0)
+        .attr("cy", 0)
+        .attr("stroke", semiGlobalLocalSturctureColor.strokeColor)
+        .attr("stroke-width", 0.5)
+
+    modelGroup
+        .selectAll(".circle")
         .data((d) => [d])
         .join("circle")
         .attr("class", "circle")
@@ -441,22 +475,22 @@ function render(
 
     const zoom = d3
         .zoom()
-        .on("zoom", (event) =>
+        .on("zoom", (event) => {
             svgbase.select(".zoom-container").attr("transform", event.transform)
-        )
+        })
         .extent([
             [0, 0],
             [width, height],
         ])
         .scaleExtent([0.5, 8])
 
+    svgbase.call(zoom)
+
     // Center the graph visualization with a fixed value
     const centerX = width / 2
     const centerY = height / 2
 
     svgbase
-        .call(zoom)
-        .call(zoom.transform, d3.zoomIdentity.scale(1))
         .transition()
         .duration(0)
         .call(
@@ -499,6 +533,10 @@ function render(
             .attr("fill", "black")
             .text("Global Structure")
     }
+
+    const performanceLabels = performanceGroup
+        .selectAll(".performanceLabel")
+        .style("opacity", showPerformanceLabels ? 1 : 0)
 }
 
 export default function GlobalCore({
@@ -510,9 +548,13 @@ export default function GlobalCore({
     modelId,
     modelIdIndex,
     modelMetaData,
+    showPerformance,
+    showHessian,
+    showPerformanceLabels,
 }: GlobalCoreProp): React.JSX.Element {
     const svg = React.useRef<SVGSVGElement>(null)
     const wraperRef = React.useRef<HTMLDivElement>(null)
+    const [isInitialized, setIsInitialized] = React.useState(false)
 
     React.useEffect(() => {
         const updateChart = () => {
@@ -535,7 +577,7 @@ export default function GlobalCore({
     }, [])
 
     React.useEffect(() => {
-        if (!data) return
+        if (!data || isInitialized) return
         const clonedData = JSON.parse(JSON.stringify(data))
         render(
             svg,
@@ -545,18 +587,27 @@ export default function GlobalCore({
             updateSelectedModelIdModeId,
             modelId,
             modelIdIndex,
-            modelMetaData
+            modelMetaData,
+            showPerformance,
+            showHessian,
+            showPerformanceLabels
         )
-    }, [
-        data,
-        width,
-        height,
-        selectedCheckPointIdList,
-        updateSelectedModelIdModeId,
-        modelId,
-        modelIdIndex,
-        modelMetaData,
-    ])
+        setIsInitialized(true)
+    }, [data, isInitialized])
+
+    React.useEffect(() => {
+        if (!isInitialized) return
+        const svgElement = d3.select(svg.current)
+        svgElement
+            .selectAll(".performanceGroup")
+            .style("opacity", showPerformance ? 1 : 0)
+        svgElement
+            .selectAll(".hessianGroup")
+            .style("opacity", showHessian ? 1 : 0)
+        svgElement
+            .selectAll(".performanceLabel")
+            .style("opacity", showPerformanceLabels ? 1 : 0)
+    }, [showPerformance, showHessian, showPerformanceLabels, isInitialized])
 
     return (
         <div ref={wraperRef} className="h-full w-full rounded border">

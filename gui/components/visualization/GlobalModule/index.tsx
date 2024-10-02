@@ -12,9 +12,15 @@ import GlobalCore from "./GlobalCore"
 export default function GlobalModule({
     height,
     width,
+    showPerformance,
+    showHessian,
+    showPerformanceLabels,
 }: {
     height: number
     width: number
+    showPerformance: boolean
+    showHessian: boolean
+    showPerformanceLabels: boolean
 }) {
     const [loader] = useAtom(loadableSemiGlobalLocalStructureAtom)
     const [selectedCheckPointIdList, setSelectedCheckPointIdList] = useAtom(
@@ -107,6 +113,9 @@ export default function GlobalModule({
                                     modelId={modelId}
                                     modelIdIndex={modelIdIndex}
                                     modelMetaData={modelMetaData}
+                                    showPerformance={showPerformance}
+                                    showHessian={showHessian}
+                                    showPerformanceLabels={showPerformanceLabels}
                                 />
                             </div>
                         )
