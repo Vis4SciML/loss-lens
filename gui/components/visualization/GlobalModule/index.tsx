@@ -38,7 +38,7 @@ export default function GlobalModule({
         const placeholder = (
             <div className="flex">
                 <div
-                    className="flex-1"
+                    className="flex-1 p-1"
                     style={{ height: height, width: width / 2 }}
                 >
                     <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
@@ -52,7 +52,7 @@ export default function GlobalModule({
                     </div>
                 </div>
                 <div
-                    className="flex-1"
+                    className="flex-1 p-1"
                     style={{ height: height, width: width / 2 }}
                 >
                     <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">

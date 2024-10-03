@@ -39,8 +39,10 @@ export default function LocalStructure({
             if (checkPointId === "") {
                 return (
                     <div className="col-span-5 h-full" key={mId}>
-                        <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
-                            please select a checkpoint
+                        <div className="relative grid h-full grid-cols-1 px-1">
+                            <div className="flex h-[calc(100%-1.5rem)] w-full items-center justify-center rounded-sm border text-gray-500">
+                                please select a checkpoint
+                            </div>
                         </div>
                     </div>
                 )
