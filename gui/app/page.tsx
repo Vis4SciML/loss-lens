@@ -89,7 +89,7 @@ export default function IndexPage() {
         setIsControlPanelOpen(!isControlPanelOpen)
     }
     return (
-        <section className="p-4">
+        <section className="p-2">
             <div className="grid grid-cols-12">
                 <div className="col-span-2 h-[calc(100vh-3rem)]">
                     <div className="">
@@ -205,7 +205,7 @@ export default function IndexPage() {
                     </div>
                 </div>
 
-                <div className="col-span-10 h-[calc(100vh-3rem)]">
+                <div className="col-span-10 h-[calc(100vh-4rem)]">
                     <GlobalModuleNoSSR
                         height={800}
                         width={1200}

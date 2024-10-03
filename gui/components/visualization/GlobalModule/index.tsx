@@ -99,11 +99,11 @@ export default function GlobalModule({
                         return (
                             <div
                                 key={modelId}
-                                className="col-span-1 aspect-square p-1"
+                                className="col-span-1 aspect-square px-1"
                             >
                                 <GlobalCore
-                                    height={canvasHeight / 2}
-                                    width={canvasWidth / 2}
+                                    height={canvasHeight / 2.1}
+                                    width={canvasWidth / 2.1}
                                     data={loader.data}
                                     selectedCheckPointIdList={
                                         selectedCheckPointIdList
