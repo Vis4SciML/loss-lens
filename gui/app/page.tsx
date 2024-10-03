@@ -70,6 +70,7 @@ export default function IndexPage() {
     const [showHessian, setShowHessian] = useState(true)
     const [showPerformanceLabels, setShowPerformanceLabels] = useState(true)
     const [lossRange, setLossRange] = useState([0, 100])
+    const [isControlPanelOpen, setIsControlPanelOpen] = useState(true)
 
     const handleClick = () => {
         setSystemConfigs((prev) => ({
@@ -83,111 +84,132 @@ export default function IndexPage() {
             {systemConfigs.caseStudyLabels[key]}
         </SelectItem>
     ))
-    const [isControlPanelOpen, setIsControlPanelOpen] = useState(true)
 
     const toggleControlPanel = () => {
         setIsControlPanelOpen(!isControlPanelOpen)
     }
+
+    // Calculate dimensions for components
+    const controlPanelWidth = isControlPanelOpen
+        ? (width * 2) / 12
+        : width * 0.05
+    const mainContentWidth = width - controlPanelWidth
+    const globalModuleHeight = height * 0.7
+    const localStructureHeight = height * 0.3
+
     return (
-        <section className="p-2">
-            <div className="grid grid-cols-12">
-                <div className="col-span-2 h-[calc(100vh-3rem)]">
-                    <div className="">
+        <section className="h-screen w-screen">
+            <div className="grid h-full grid-cols-12">
+                <div
+                    className={`col-span-${
+                        isControlPanelOpen ? "2" : "1"
+                    } h-full`}
+                >
+                    <div className="h-full">
                         {isControlPanelOpen ? (
-                            <div className="w-full rounded-sm border border-gray-200 p-2">
-                                <div className="flex flex-col items-start">
-                                    <div className="font-serif text-xl font-extrabold">
-                                        {siteConfig.name}
-                                    </div>
-                                    <div className="w-full py-1 text-sm">
-                                        <Select
-                                            onValueChange={
-                                                setSelectedCaseStudyUI
-                                            }
-                                        >
-                                            <SelectTrigger id="framework">
-                                                <SelectValue placeholder="Select Case Study" />
-                                            </SelectTrigger>
-                                            <SelectContent
-                                                className="w-40"
-                                                position="popper"
-                                            >
-                                                {caseStudyItems}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="flex w-full justify-between">
-                                        <Button
-                                            size="xs"
-                                            className="w-full rounded-sm"
-                                            variant="outline"
-                                            onClick={handleClick}
-                                        >
-                                            Apply
-                                            {/* <Icons.play className="h-5 w-5" /> */}
-                                        </Button>
-                                        <Button
-                                            size="xs"
-                                            variant="ghost"
-                                            onClick={toggleControlPanel}
-                                        >
-                                            <Icons.chevronLeft className="h-5 w-5" />
-                                        </Button>
-                                    </div>
-                                    <div className="w-full py-2 text-xs">
-                                        <div className="mb-2 font-serif text-sm font-bold">
-                                            Global View Settings
+                            <div className="h-full w-full overflow-auto rounded-sm border border-gray-200 p-2">
+                                <div className="w-full rounded-sm border border-gray-200 p-2">
+                                    <div className="flex flex-col items-start">
+                                        <div className="font-serif text-xl font-extrabold">
+                                            {siteConfig.name}
                                         </div>
-                                        <div className="flex items-center justify-between">
-                                            <label
-                                                htmlFor="showPerformance"
-                                                className="mr-2"
-                                            >
-                                                Show Performance
-                                            </label>
-                                            <Checkbox
-                                                id="showPerformance"
-                                                checked={showPerformance}
-                                                onCheckedChange={(checked) =>
-                                                    setShowPerformance(
-                                                        checked === true
-                                                    )
+                                        <div className="w-full py-1 text-sm">
+                                            <Select
+                                                onValueChange={
+                                                    setSelectedCaseStudyUI
                                                 }
-                                            />
+                                            >
+                                                <SelectTrigger id="framework">
+                                                    <SelectValue placeholder="Select Case Study" />
+                                                </SelectTrigger>
+                                                <SelectContent
+                                                    className="w-40"
+                                                    position="popper"
+                                                >
+                                                    {caseStudyItems}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
-                                        <div className="mt-2 flex items-center justify-between">
-                                            <label
-                                                htmlFor="showHessian"
-                                                className="mr-2"
+                                        <div className="flex w-full justify-between">
+                                            <Button
+                                                size="xs"
+                                                className="w-full rounded-sm"
+                                                variant="outline"
+                                                onClick={handleClick}
                                             >
-                                                Show Hessian
-                                            </label>
-                                            <Checkbox
-                                                id="showHessian"
-                                                checked={showHessian}
-                                                onCheckedChange={(checked) =>
-                                                    setShowHessian(
-                                                        checked === true
-                                                    )
-                                                }
-                                            />
+                                                Apply
+                                            </Button>
+                                            <Button
+                                                size="xs"
+                                                variant="ghost"
+                                                onClick={toggleControlPanel}
+                                            >
+                                                <Icons.chevronLeft className="h-5 w-5" />
+                                            </Button>
                                         </div>
-                                        <div className="mt-2 flex items-center justify-between">
-                                            <label
-                                                htmlFor="showPerformanceLabels"
-                                                className="mr-2"
-                                            >
-                                                Show Performance Labels
-                                            </label>
-                                            <Checkbox
-                                                id="showPerformanceLabels"
-                                                checked={showPerformanceLabels}
-                                                onCheckedChange={(checked) =>
-                                                    setShowPerformanceLabels(
-                                                        checked === true
-                                                    )
-                                                }
-                                            />
+                                        <div className="w-full py-2 text-xs">
+                                            <div className="mb-2 font-serif text-sm font-bold">
+                                                Global View Settings
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <label
+                                                    htmlFor="showPerformance"
+                                                    className="mr-2"
+                                                >
+                                                    Show Performance
+                                                </label>
+                                                <Checkbox
+                                                    id="showPerformance"
+                                                    checked={showPerformance}
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        setShowPerformance(
+                                                            checked === true
+                                                        )
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="mt-2 flex items-center justify-between">
+                                                <label
+                                                    htmlFor="showHessian"
+                                                    className="mr-2"
+                                                >
+                                                    Show Hessian
+                                                </label>
+                                                <Checkbox
+                                                    id="showHessian"
+                                                    checked={showHessian}
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        setShowHessian(
+                                                            checked === true
+                                                        )
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="mt-2 flex items-center justify-between">
+                                                <label
+                                                    htmlFor="showPerformanceLabels"
+                                                    className="mr-2"
+                                                >
+                                                    Show Performance Labels
+                                                </label>
+                                                <Checkbox
+                                                    id="showPerformanceLabels"
+                                                    checked={
+                                                        showPerformanceLabels
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        setShowPerformanceLabels(
+                                                            checked === true
+                                                        )
+                                                    }
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -205,16 +227,28 @@ export default function IndexPage() {
                     </div>
                 </div>
 
-                <div className="col-span-10 h-[calc(100vh-4rem)]">
-                    <GlobalModuleNoSSR
-                        height={800}
-                        width={1200}
-                        showPerformance={showPerformance}
-                        showHessian={showHessian}
-                        showPerformanceLabels={showPerformanceLabels}
-                    />
-
-                    <LocalStructureNoSSR height={500} width={500} />
+                <div
+                    className={`col-span-${
+                        isControlPanelOpen ? "10" : "12"
+                    } h-full`}
+                >
+                    <div className="flex h-full flex-col">
+                        <div className="flex-grow">
+                            <GlobalModuleNoSSR
+                                height={globalModuleHeight}
+                                width={mainContentWidth}
+                                showPerformance={showPerformance}
+                                showHessian={showHessian}
+                                showPerformanceLabels={showPerformanceLabels}
+                            />
+                        </div>
+                        <div className="flex-shrink-0">
+                            <LocalStructureNoSSR
+                                height={localStructureHeight}
+                                width={mainContentWidth}
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

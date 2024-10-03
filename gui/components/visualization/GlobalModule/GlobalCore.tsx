@@ -35,17 +35,15 @@ function render(
     modelMetaData: any,
     showPerformance: boolean,
     showHessian: boolean,
-    showPerformanceLabels: boolean
+    showPerformanceLabels: boolean,
+    width: number,
+    height: number
 ) {
-    const divElement = wraperRef.current
-    const width = divElement?.clientWidth || 0
-    const height = divElement?.clientHeight || 0
     const svgbase = d3.select(svgRef.current)
     const margin = { top: 10, right: 10, bottom: 10, left: 10 }
     const h = height - margin.top - margin.bottom
     const w = width - margin.left - margin.right
 
-    console.log("data", data)
     svgbase.attr("width", width).attr("height", height)
     const { nodes: wholeNodes, links: wholeLinks, modelList } = data
 
@@ -165,8 +163,8 @@ function render(
             tooltip.style("visibility", "hidden")
         })
 
-    const innerRadius = 20
-    const outerRadius = 40
+    const innerRadius = Math.min(w, h) * 0.05
+    const outerRadius = Math.min(w, h) * 0.1
 
     const barScale = d3
         .scaleRadial()
@@ -376,7 +374,6 @@ function render(
         .selectAll(".hessianBar")
         .data((d) => {
             const hessian = d.localFlatness
-            console.log("hessian", hessian)
             return d.localFlatness
         })
         .join("path")
@@ -466,7 +463,6 @@ function render(
                 .selectAll(".outerRing")
                 .attr("stroke-width", 1)
                 .attr("stroke", semiGlobalLocalSturctureColor.strokeColor)
-            console.log("click", d.modelId + "-" + d.modeId)
             svgbase.selectAll(".node").style("opacity", 1)
             svgbase.selectAll(".link").style("stroke-opacity", 1)
             svgbase
@@ -512,7 +508,6 @@ function render(
         .attr("width", width - 20)
         .attr("height", 160)
         .append("xhtml:div")
-        // .style("background", "white")
         .style("border", "1px solid black")
         .style("padding", "5px")
         .style("font-size", "12px")
@@ -596,7 +591,9 @@ export default function GlobalCore({
             modelMetaData,
             showPerformance,
             showHessian,
-            showPerformanceLabels
+            showPerformanceLabels,
+            width,
+            height
         )
         setIsInitialized(true)
     }, [data, isInitialized])

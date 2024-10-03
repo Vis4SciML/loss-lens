@@ -1,4 +1,5 @@
 "use client"
+
 import { useAtom } from "jotai"
 
 import {
@@ -33,77 +34,66 @@ export default function GlobalModule({
         setSelectedCheckPointIdList({ index, value: newId })
     }
 
-    const canvasHeight = height - 170
-    const canvasWidth = width - 30
-
     const renderContent = () => {
+        const placeholder = (
+            <div className="flex">
+                <div
+                    className="flex-1"
+                    style={{ height: height, width: width / 2 }}
+                >
+                    <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
+                        {loader.state === "hasError" ||
+                        modelMetaDataLoader.state === "hasError"
+                            ? "Error loading data"
+                            : loader.state === "loading" ||
+                                modelMetaDataLoader.state === "loading"
+                              ? "Loading..."
+                              : "please select a case study to start"}
+                    </div>
+                </div>
+                <div
+                    className="flex-1"
+                    style={{ height: height, width: width / 2 }}
+                >
+                    <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
+                        {loader.state === "hasError" ||
+                        modelMetaDataLoader.state === "hasError"
+                            ? "Error loading data"
+                            : loader.state === "loading" ||
+                                modelMetaDataLoader.state === "loading"
+                              ? "Loading..."
+                              : "please select a case study to start"}
+                    </div>
+                </div>
+            </div>
+        )
+
         if (
             loader.state === "hasError" ||
-            modelMetaDataLoader.state === "hasError"
-        ) {
-            return (
-                <div className="col-span-10 grid grid-cols-2">
-                    <div className="col-span-1 aspect-square p-1">
-                        <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
-                            Error loading data
-                        </div>
-                    </div>
-                    <div className="col-span-1 aspect-square p-1">
-                        <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
-                            Error loading data
-                        </div>
-                    </div>
-                </div>
-            )
-        } else if (
+            modelMetaDataLoader.state === "hasError" ||
             loader.state === "loading" ||
-            modelMetaDataLoader.state === "loading"
+            modelMetaDataLoader.state === "loading" ||
+            loader.data === null ||
+            !modelMetaDataLoader.data
         ) {
-            return (
-                <div className="col-span-10 grid grid-cols-2">
-                    <div className="col-span-1 aspect-square p-1">
-                        <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
-                            Loading...
-                        </div>
-                    </div>
-                    <div className="col-span-1 aspect-square p-1">
-                        <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
-                            Loading...
-                        </div>
-                    </div>
-                </div>
-            )
-        } else if (loader.data === null || !modelMetaDataLoader.data) {
-            return (
-                <div className="col-span-10 grid grid-cols-2">
-                    <div className="col-span-1 aspect-square p-1">
-                        <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
-                            please select a case study to start
-                        </div>
-                    </div>
-                    <div className="col-span-1 aspect-square p-1">
-                        <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
-                            please select a case study to start
-                        </div>
-                    </div>
-                </div>
-            )
+            return placeholder
         } else {
             const modelList = loader.data.modelList
             const modelMetaDataList = modelMetaDataLoader.data.data
 
             return (
-                <div className="col-span-10 grid grid-cols-2">
+                <div className="flex">
                     {modelList.map((modelId: string, modelIdIndex: number) => {
                         const modelMetaData = modelMetaDataList[modelIdIndex]
                         return (
                             <div
                                 key={modelId}
-                                className="col-span-1 aspect-square px-1"
+                                className="flex-1 p-1"
+                                style={{ height: height, width: width / 2 }}
                             >
                                 <GlobalCore
-                                    height={canvasHeight / 2.1}
-                                    width={canvasWidth / 2.1}
+                                    height={height - 8}
+                                    width={width / 2 - 8}
                                     data={loader.data}
                                     selectedCheckPointIdList={
                                         selectedCheckPointIdList
@@ -128,5 +118,9 @@ export default function GlobalModule({
         }
     }
 
-    return <div className="grid grid-cols-10">{renderContent()}</div>
+    return (
+        <div className="" style={{ height, width }}>
+            {renderContent()}
+        </div>
+    )
 }

@@ -8,7 +8,8 @@ import { lossContourColor } from "@/styles/vis-color-scheme"
 
 interface LossContourCoreProp {
     data: LossLandscape
-    dimensions: { width: number; height: number }
+    height: number
+    width: number
     globalInfo: GlobalInfo
 }
 
@@ -26,13 +27,17 @@ function render(
     wrapperRef: React.RefObject<HTMLDivElement>,
     data: LossLandscape,
     globalInfo: GlobalInfo,
-    dimensions: { width: number; height: number }
+    height: number,
+    width: number
 ) {
-    const { width, height } = dimensions
-
     const padding = calculatePadding(width, height)
     const h = height - padding.top - padding.bottom
-    const w = width - padding.left - padding.right
+    const w = width - padding.left
+    console.log("padding")
+    console.log(padding)
+    console.log("width")
+    console.log(w)
+    console.log(h)
 
     const globalUpperBound = globalInfo.lossBounds.upperBound
     const globalLowerBound = globalInfo.lossBounds.lowerBound
@@ -91,7 +96,7 @@ function render(
 
     const contours = d3
         .contours()
-        .size([40, 40])
+        .size([lengthOfGrid, lengthOfGrid])
         .thresholds(thresholdArray)(data.grid.flat())
         .map(transform)
 
@@ -124,9 +129,9 @@ function render(
     legend
         .join("rect")
         .attr("class", "legend")
-        .attr("y", h - 7)
+        .attr("y", w + 5) // Adjusted the y position to place the legend correctly
         .attr("x", 35)
-        .attr("height", 7)
+        .attr("height", 10)
         .attr("width", w - 45)
         .attr("stroke", "#666")
         .attr("fill", "url(#lossgrad)")
@@ -141,8 +146,8 @@ function render(
     legendAxis
         .join("g")
         .attr("class", "legendAxis")
-        .attr("transform", `translate(35, ${h})`)
-        .call(d3.axisTop(legendScale).ticks(4).tickFormat(d3.format(".2s")))
+        .attr("transform", `translate(${35}, ${w + 15})`) // Adjusted the transform to place the axis correctly
+        .call(d3.axisBottom(legendScale).ticks(4).tickFormat(d3.format(".2s"))) // Changed axisTop to axisBottom
 
     legendAxis
         .selectAll(".tick text")
@@ -165,7 +170,8 @@ function render(
 }
 
 export default function LossContourCore({
-    dimensions,
+    height,
+    width,
     data,
     globalInfo,
 }: LossContourCoreProp): React.JSX.Element {
@@ -174,21 +180,14 @@ export default function LossContourCore({
 
     React.useEffect(() => {
         if (wrapperRef.current && svg.current && data) {
-            const wrapperWidth = wrapperRef.current.clientWidth
-            const wrapperHeight = wrapperRef.current.clientHeight
-            const size = Math.min(wrapperWidth, wrapperHeight)
-
-            render(svg, wrapperRef, data, globalInfo, {
-                width: size,
-                height: size,
-            })
+            render(svg, wrapperRef, data, globalInfo, height, width)
         }
-    }, [data, dimensions, globalInfo])
+    }, [data, height, width, globalInfo])
 
     return (
         <div
             ref={wrapperRef}
-            className="flex h-full w-full flex-col items-center justify-start"
+            className="flex h-full w-full flex-col items-center justify-center"
         >
             <div className="text-center text-sm">
                 Local Structure - Loss Contour

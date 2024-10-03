@@ -10,12 +10,14 @@ import {
 import LossContourCore from "./LossContour"
 
 interface LossLandscapeProps {
-    dimensions: { width: number; height: number }
+    height: number
+    width: number
     checkpointId: string
 }
 
 export default function LossLandscape({
-    dimensions,
+    height,
+    width,
     checkpointId,
 }: LossLandscapeProps) {
     const [lossLandscapeDataLoader] = useAtom(
@@ -27,12 +29,20 @@ export default function LossLandscape({
         lossLandscapeDataLoader.state === "hasError" ||
         globalInfoLoader.state === "hasError"
     ) {
-        return <div>error</div>
+        return (
+            <div className="flex h-full w-full items-center justify-center text-gray-500">
+                error
+            </div>
+        )
     } else if (
         lossLandscapeDataLoader.state === "loading" ||
         globalInfoLoader.state === "loading"
     ) {
-        return <div>loading</div>
+        return (
+            <div className="flex h-full w-full items-center justify-center text-gray-500">
+                loading
+            </div>
+        )
     } else {
         if (
             lossLandscapeDataLoader.data === null ||
@@ -46,7 +56,8 @@ export default function LossLandscape({
         } else {
             return (
                 <LossContourCore
-                    dimensions={dimensions}
+                    height={height}
+                    width={width}
                     data={lossLandscapeDataLoader.data}
                     globalInfo={globalInfoLoader.data}
                 />

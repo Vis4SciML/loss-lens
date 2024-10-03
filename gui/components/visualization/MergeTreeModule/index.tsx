@@ -7,12 +7,14 @@ import { fetchCheckpointMergeTreeDataAtomFamily } from "@/lib/store"
 import MergeTreeCore from "./MergeTreeCore"
 
 interface MergeTreeProps {
-    dimensions: { width: number; height: number }
+    height: number
+    width: number
     checkpointId: string
 }
 
 export default function MergeTree({
-    dimensions,
+    height,
+    width,
     checkpointId,
 }: MergeTreeProps) {
     const [mergeTreeDataLoader] = useAtom(
@@ -33,7 +35,8 @@ export default function MergeTree({
         } else {
             return (
                 <MergeTreeCore
-                    dimensions={dimensions}
+                    height={height}
+                    width={width}
                     data={mergeTreeDataLoader.data}
                 />
             )

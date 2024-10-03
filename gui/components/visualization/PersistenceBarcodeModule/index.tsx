@@ -7,12 +7,14 @@ import { fetchCheckpointPersistenceBarcodeDataAtomFamily } from "@/lib/store"
 import PersistenceBarcodeCore from "./PersistenceBarcodeCore"
 
 interface PersistenceBarcodeProps {
-    dimensions: { width: number; height: number }
+    height: number
+    width: number
     checkpointId: string
 }
 
 export default function PersistenceBarcode({
-    dimensions,
+    height,
+    width,
     checkpointId,
 }: PersistenceBarcodeProps) {
     const [persistenceBarcodeDataLoader] = useAtom(
@@ -33,7 +35,8 @@ export default function PersistenceBarcode({
         } else {
             return (
                 <PersistenceBarcodeCore
-                    dimensions={dimensions}
+                    height={height}
+                    width={width}
                     data={persistenceBarcodeDataLoader.data}
                 />
             )

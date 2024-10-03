@@ -8,14 +8,15 @@ import { mergeTreeColor } from "@/styles/vis-color-scheme"
 
 interface MergeTreeCoreProp {
     data: MergeTreeData
-    dimensions: { width: number; height: number }
+    height: number
+    width: number
 }
 
 function calculatePadding(width: number, height: number) {
     return {
         top: height * 0.02,
         right: width * 0.3,
-        bottom: height * 0.1,
+        bottom: height * 0.2,
         left: width * 0.25,
     }
 }
@@ -24,10 +25,9 @@ function render(
     svgRef: React.RefObject<SVGSVGElement>,
     wrapperRef: React.RefObject<HTMLDivElement>,
     data: MergeTreeData,
-    dimensions: { width: number; height: number }
+    height: number,
+    width: number
 ) {
-    const { width, height } = dimensions
-
     const padding = calculatePadding(width, height)
     const h = height - padding.top - padding.bottom
     const w = width - padding.left - padding.right
@@ -113,7 +113,8 @@ function render(
 }
 
 export default function MergeTreeCore({
-    dimensions,
+    height,
+    width,
     data,
 }: MergeTreeCoreProp): React.JSX.Element {
     const svg = React.useRef<SVGSVGElement>(null)
@@ -121,18 +122,14 @@ export default function MergeTreeCore({
 
     React.useEffect(() => {
         if (wrapperRef.current && svg.current && data) {
-            const wrapperWidth = wrapperRef.current.clientWidth
-            const wrapperHeight = wrapperRef.current.clientHeight
-            const size = Math.min(wrapperWidth, wrapperHeight)
-
-            render(svg, wrapperRef, data, { width: size, height: size })
+            render(svg, wrapperRef, data, height, width)
         }
-    }, [data, dimensions])
+    }, [data, height, width])
 
     return (
         <div
             ref={wrapperRef}
-            className="flex h-full w-full flex-col items-center justify-start"
+            className="flex h-full w-full flex-col items-center justify-center"
         >
             <div className="text-center text-sm">Merge Tree</div>
             <svg ref={svg}>

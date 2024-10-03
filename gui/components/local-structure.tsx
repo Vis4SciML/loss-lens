@@ -7,36 +7,26 @@ import LossLandscape from "./visualization/LossLandscapeModule"
 import MergeTreeModule from "./visualization/MergeTreeModule"
 import PersistenceBarcode from "./visualization/PersistenceBarcodeModule"
 
-export default function LocalStructure() {
+export default function LocalStructure({
+    height,
+    width,
+}: {
+    height: number
+    width: number
+}) {
     const [selectedCheckPointIdList] = useAtom(selectedCheckPointIdListAtom)
     const containerRef = useRef<HTMLDivElement>(null)
-    const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-
-    useEffect(() => {
-        const updateDimensions = () => {
-            if (containerRef.current) {
-                setDimensions({
-                    width: containerRef.current.clientWidth,
-                    height: containerRef.current.clientHeight,
-                })
-            }
-        }
-
-        updateDimensions()
-        window.addEventListener("resize", updateDimensions)
-        return () => window.removeEventListener("resize", updateDimensions)
-    }, [])
 
     const renderContent = () => {
         if (selectedCheckPointIdList.length === 0) {
             return (
                 <>
-                    <div className="col-span-5 h-full p-1">
+                    <div className="col-span-5 h-full">
                         <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
                             please select a case study to start
                         </div>
                     </div>
-                    <div className="col-span-5 h-full p-1">
+                    <div className="col-span-5 h-full">
                         <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
                             please select a case study to start
                         </div>
@@ -48,7 +38,7 @@ export default function LocalStructure() {
         return selectedCheckPointIdList.map((checkPointId, mId) => {
             if (checkPointId === "") {
                 return (
-                    <div className="col-span-5 h-full p-1" key={mId}>
+                    <div className="col-span-5 h-full" key={mId}>
                         <div className="flex h-full w-full items-center justify-center rounded border text-gray-500">
                             please select a checkpoint
                         </div>
@@ -57,22 +47,35 @@ export default function LocalStructure() {
             }
             return (
                 <div className="col-span-5 h-full" key={mId}>
-                    <div className="relative grid h-full grid-cols-3">
-                        <div className="col-span-1 h-full">
+                    <div className="relative grid h-full grid-cols-3 px-1">
+                        <div className="col-span-1 h-[calc(100%-1.5rem)] rounded-sm border">
                             <LossLandscape
-                                dimensions={dimensions}
+                                height={height - 4}
+                                width={
+                                    (width - 8) /
+                                    (3 * selectedCheckPointIdList.length)
+                                }
                                 checkpointId={checkPointId}
                             />
                         </div>
-                        <div className="col-span-1 h-full">
+                        <div className="col-span-1 ml-1 h-[calc(100%-1.5rem)] rounded-sm border">
                             <PersistenceBarcode
-                                dimensions={dimensions}
+                                height={height - 4}
+                                width={
+                                    (width - 8) /
+                                    (3 * selectedCheckPointIdList.length)
+                                }
                                 checkpointId={checkPointId}
                             />
                         </div>
-                        <div className="col-span-1 h-full">
+                        <div className="col-span-1 ml-1 h-[calc(100%-1.5rem)] rounded-sm border">
                             <MergeTreeModule
-                                dimensions={dimensions}
+                                height={height - 4}
+                                width={
+                                    (width - 8) /
+                                        (3 * selectedCheckPointIdList.length) -
+                                    8
+                                }
                                 checkpointId={checkPointId}
                             />
                         </div>
@@ -83,7 +86,7 @@ export default function LocalStructure() {
     }
 
     return (
-        <div ref={containerRef} className="grid h-[calc(23vh)]">
+        <div ref={containerRef} className="grid" style={{ height, width }}>
             <div className="grid grid-cols-10">{renderContent()}</div>
         </div>
     )
