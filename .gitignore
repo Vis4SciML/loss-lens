@@ -10,7 +10,7 @@ server/model/MNIST/.DS_Store
 server/calculate/.DS_Store
 server/calculate/database/.DS_Store
 server/calculate2/data/
-server/calculate2/trained_models/
+server/calculate/trained_models/
 server/figures/contours/MNIST/*
 server/calculate/loss_landscapes/.ipynb_checkpoints/
 .vscode

@@ -1,8 +1,0 @@
-{
-  "modelId": "pinn_convection_beta1",
-  "modelName": "pinn_convection_beta1",
-  "modelDescription": "Learning Rate: 0.001, Batch Size: 1024, Epochs: 150, Hidden Units: 512",
-  "modelDataset": "unknown",
-  "datasetId": "unknown",
-  "modelDatasetDescription": "unknown"
-}

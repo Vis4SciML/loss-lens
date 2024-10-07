@@ -18,7 +18,7 @@ args = parser.parse_args()
 
 case_id = "pinn"
 
-model_list = ["pinn_convection_beta1", "pinn_convection_beta50"]
+model_list = ["PINN_convection_beta_1.0", "PINN_convection_beta_50.0"]
 
 meta_data_list = []
 modes_list = []
@@ -88,7 +88,7 @@ with tqdm(total=len(modes_list), desc="Progress", unit="iter", ncols=100) as pba
 
         if args.compute == "all" or args.compute == "cka_similarity":
             pbar.set_postfix(Status=f"{model_id}-{mode_id}: cka similarity")
-            update_mode_cka_similarity(case_id, model_id, mode_id) 
+            update_mode_cka_similarity(case_id, model_id, mode_id)
 
         pbar.set_postfix(Status=f"{model_id}-{mode_id}: done")
         pbar.update(1)

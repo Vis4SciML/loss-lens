@@ -1,4 +1,4 @@
-#*
+# *
 # @file Different utility functions
 # Copyright (c) Zhewei Yao, Amir Gholami
 # All rights reserved.
@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with PyHessian.  If not, see <http://www.gnu.org/licenses/>.
-#*
+# *
 
 import torch
 import math
@@ -24,9 +24,17 @@ import copy
 from torch.autograd import Variable
 import numpy as np
 
-from pyhessian.utils import group_product, group_add, normalization, get_params_grad, hessian_vector_product, orthnormal
+from pyhessian.utils import (
+    group_product,
+    group_add,
+    normalization,
+    get_params_grad,
+    hessian_vector_product,
+    orthnormal,
+)
 
-class hessian():
+
+class hessian:
     """
     The class used to compute :
         i) the top 1 (n) eigenvalue(s) of the neural network
@@ -43,8 +51,9 @@ class hessian():
         """
 
         # make sure we either pass a single batch or a dataloader
-        assert (data != None and dataloader == None) or (data == None and
-                                                         dataloader != None)
+        assert (data != None and dataloader == None) or (
+            data == None and dataloader != None
+        )
 
         self.model = model.eval()  # make model is in evaluation model
         self.criterion = criterion
@@ -57,16 +66,15 @@ class hessian():
             self.full_dataset = True
 
         if cuda:
-            self.device = 'cuda'
+            self.device = "cuda"
         else:
-            self.device = 'cpu'
+            self.device = "cpu"
 
         # pre-processing for single batch case to simplify the computation.
         if not self.full_dataset:
             self.inputs, self.targets = self.data
-            if self.device == 'cuda':
-                self.inputs, self.targets = self.inputs.cuda(
-                ), self.targets.cuda()
+            if self.device == "cuda":
+                self.inputs, self.targets = self.inputs.cuda(), self.targets.cuda()
 
             # if we only compute the Hessian information for a single batch data, we can re-use the gradients.
             outputs = self.model(self.inputs)
@@ -83,8 +91,9 @@ class hessian():
         device = self.device
         num_data = 0  # count the number of datum points in the dataloader
 
-        THv = [torch.zeros(p.size()).to(device) for p in self.params
-              ]  # accumulate result
+        THv = [
+            torch.zeros(p.size()).to(device) for p in self.params
+        ]  # accumulate result
         for inputs, targets in self.data:
             self.model.zero_grad()
             tmp_num_data = inputs.size(0)
@@ -93,15 +102,10 @@ class hessian():
             loss.backward(create_graph=True)
             params, gradsH = get_params_grad(self.model)
             self.model.zero_grad()
-            Hv = torch.autograd.grad(gradsH,
-                                     params,
-                                     grad_outputs=v,
-                                     only_inputs=True,
-                                     retain_graph=False)
-            THv = [
-                THv1 + Hv1 * float(tmp_num_data) + 0.
-                for THv1, Hv1 in zip(THv, Hv)
-            ]
+            Hv = torch.autograd.grad(
+                gradsH, params, grad_outputs=v, only_inputs=True, retain_graph=False
+            )
+            THv = [THv1 + Hv1 * float(tmp_num_data) + 0.0 for THv1, Hv1 in zip(THv, Hv)]
             num_data += float(tmp_num_data)
 
         THv = [THv1 / float(num_data) for THv1 in THv]
@@ -127,8 +131,9 @@ class hessian():
 
         while computed_dim < top_n:
             eigenvalue = None
-            v = [torch.randn(p.size()).to(device) for p in self.params
-                ]  # generate random vector
+            v = [
+                torch.randn(p.size()).to(device) for p in self.params
+            ]  # generate random vector
             v = normalization(v)  # normalize the vector
 
             for i in range(maxIter):
@@ -146,8 +151,10 @@ class hessian():
                 if eigenvalue == None:
                     eigenvalue = tmp_eigenvalue
                 else:
-                    if abs(eigenvalue - tmp_eigenvalue) / (abs(eigenvalue) +
-                                                           1e-6) < tol:
+                    if (
+                        abs(eigenvalue - tmp_eigenvalue) / (abs(eigenvalue) + 1e-6)
+                        < tol
+                    ):
                         break
                     else:
                         eigenvalue = tmp_eigenvalue
@@ -166,14 +173,11 @@ class hessian():
 
         device = self.device
         trace_vhv = []
-        trace = 0.
+        trace = 0.0
 
         for i in range(maxIter):
             self.model.zero_grad()
-            v = [
-                torch.randint_like(p, high=2, device=device)
-                for p in self.params
-            ]
+            v = [torch.randint_like(p, high=2, device=device) for p in self.params]
             # generate Rademacher random variables
             for v_i in v:
                 v_i[v_i == 0] = -1
@@ -202,10 +206,7 @@ class hessian():
         weight_list_full = []
 
         for k in range(n_v):
-            v = [
-                torch.randint_like(p, high=2, device=device)
-                for p in self.params
-            ]
+            v = [torch.randint_like(p, high=2, device=device) for p in self.params]
             # generate Rademacher random variables
             for v_i in v:
                 v_i[v_i == 0] = -1
@@ -224,8 +225,7 @@ class hessian():
                     if self.full_dataset:
                         _, w_prime = self.dataloader_hv_product(v)
                     else:
-                        w_prime = hessian_vector_product(
-                            self.gradsH, self.params, v)
+                        w_prime = hessian_vector_product(self.gradsH, self.params, v)
                     alpha = group_product(w_prime, v)
                     alpha_list.append(alpha.cpu().item())
                     w = group_add(w_prime, v, alpha=-alpha)
@@ -233,7 +233,7 @@ class hessian():
                 else:
                     beta = torch.sqrt(group_product(w, w))
                     beta_list.append(beta.cpu().item())
-                    if beta_list[-1] != 0.:
+                    if beta_list[-1] != 0.0:
                         # We should re-orth it
                         v = orthnormal(w, v_list)
                         v_list.append(v)
@@ -245,8 +245,7 @@ class hessian():
                     if self.full_dataset:
                         _, w_prime = self.dataloader_hv_product(v)
                     else:
-                        w_prime = hessian_vector_product(
-                            self.gradsH, self.params, v)
+                        w_prime = hessian_vector_product(self.gradsH, self.params, v)
                     alpha = group_product(w_prime, v)
                     alpha_list.append(alpha.cpu().item())
                     w_tmp = group_add(w_prime, v, alpha=-alpha)
@@ -268,7 +267,7 @@ class hessian():
         return eigen_list_full, weight_list_full
 
 
-class hessian_pinn():
+class hessian_pinn:
     """
     The class used to compute :
         i) the top 1 (n) eigenvalue(s) of the neural network
@@ -276,7 +275,9 @@ class hessian_pinn():
         iii) the estimated eigenvalue density
     """
 
-    def __init__(self, whole_model, model, criterion, data=None, dataloader=None, cuda=True):
+    def __init__(
+        self, whole_model, model, criterion, data=None, dataloader=None, cuda=True
+    ):
         """
         model: the model that needs Hessain information
         criterion: the loss function
@@ -285,8 +286,9 @@ class hessian_pinn():
         """
 
         # make sure we either pass a single batch or a dataloader
-        assert (data != None and dataloader == None) or (data == None and
-                                                         dataloader != None)
+        assert (data != None and dataloader == None) or (
+            data == None and dataloader != None
+        )
 
         self.model = model.eval()  # make model is in evaluation model
         self.criterion = criterion
@@ -300,46 +302,54 @@ class hessian_pinn():
             self.full_dataset = True
 
         if cuda:
-            self.device = 'cuda'
+            self.device = "cuda"
         else:
-            self.device = 'cpu'
+            self.device = "cpu"
 
         # pre-processing for single batch case to simplify the computation.
         if not self.full_dataset:
             self.inputs, self.targets = self.data
-            if self.device == 'cuda':
-                self.inputs, self.targets = self.inputs.cuda(
-                ), self.targets.cuda()
+            if self.device == "cuda":
+                self.inputs, self.targets = self.inputs.cuda(), self.targets.cuda()
 
             # if we only compute the Hessian information for a single batch data, we can re-use the gradients.
             if torch.is_grad_enabled():
                 self.whole_model.optimizer.zero_grad()
             # u_pred = self.whole_model.net_u(self.whole_model.x_u, self.whole_model.t_u)
             u_pred = self.model(torch.cat([self.inputs, self.targets], dim=1))
-            u_pred_lb = self.whole_model.net_u(self.whole_model.x_bc_lb, self.whole_model.t_bc_lb)
-            u_pred_ub = self.whole_model.net_u(self.whole_model.x_bc_ub, self.whole_model.t_bc_ub)
+            u_pred_lb = self.whole_model.net_u(
+                self.whole_model.x_bc_lb, self.whole_model.t_bc_lb
+            )
+            u_pred_ub = self.whole_model.net_u(
+                self.whole_model.x_bc_ub, self.whole_model.t_bc_ub
+            )
             if self.whole_model.nu != 0:
-                u_pred_lb_x, u_pred_ub_x = self.whole_model.net_b_derivatives(u_pred_lb, u_pred_ub, self.whole_model.x_bc_lb, self.whole_model.x_bc_ub)
+                u_pred_lb_x, u_pred_ub_x = self.whole_model.net_b_derivatives(
+                    u_pred_lb,
+                    u_pred_ub,
+                    self.whole_model.x_bc_lb,
+                    self.whole_model.x_bc_ub,
+                )
             f_pred = self.whole_model.net_f(self.whole_model.x_f, self.whole_model.t_f)
-            
-            if self.whole_model.loss_style == 'mean':
+
+            if self.whole_model.loss_style == "mean":
                 # loss_u = torch.mean((self.whole_model.u - u_pred) ** 2)
                 loss_u = torch.mean((self.targets - u_pred) ** 2)
                 loss_b = torch.mean((u_pred_lb - u_pred_ub) ** 2)
                 if self.whole_model.nu != 0:
                     loss_b += torch.mean((u_pred_lb_x - u_pred_ub_x) ** 2)
-                loss_f = torch.mean(f_pred ** 2)
-            elif self.whole_model.loss_style == 'sum':
+                loss_f = torch.mean(f_pred**2)
+            elif self.whole_model.loss_style == "sum":
                 # loss_u = torch.mean((self.targets - u_pred) ** 2)
                 loss_u = torch.mean((self.targets - u_pred) ** 2)
                 loss_b = torch.sum((u_pred_lb - u_pred_ub) ** 2)
                 if self.whole_model.nu != 0:
                     loss_b += torch.sum((u_pred_lb_x - u_pred_ub_x) ** 2)
-                loss_f = torch.sum(f_pred ** 2)
+                loss_f = torch.sum(f_pred**2)
 
-            loss = loss_u + loss_b + self.whole_model.L*loss_f
+            loss = loss_u + loss_b + self.whole_model.L * loss_f
 
-            print("loss: ", loss.item())
+            # print("loss: ", loss.item())
             loss.backward(create_graph=True)
 
         # this step is used to extract the parameters from the model
@@ -352,8 +362,9 @@ class hessian_pinn():
         device = self.device
         num_data = 0  # count the number of datum points in the dataloader
 
-        THv = [torch.zeros(p.size()).to(device) for p in self.params
-              ]  # accumulate result
+        THv = [
+            torch.zeros(p.size()).to(device) for p in self.params
+        ]  # accumulate result
         for inputs, targets in self.data:
             self.model.zero_grad()
             tmp_num_data = inputs.size(0)
@@ -362,15 +373,10 @@ class hessian_pinn():
             loss.backward(create_graph=True)
             params, gradsH = get_params_grad(self.model)
             self.model.zero_grad()
-            Hv = torch.autograd.grad(gradsH,
-                                     params,
-                                     grad_outputs=v,
-                                     only_inputs=True,
-                                     retain_graph=False)
-            THv = [
-                THv1 + Hv1 * float(tmp_num_data) + 0.
-                for THv1, Hv1 in zip(THv, Hv)
-            ]
+            Hv = torch.autograd.grad(
+                gradsH, params, grad_outputs=v, only_inputs=True, retain_graph=False
+            )
+            THv = [THv1 + Hv1 * float(tmp_num_data) + 0.0 for THv1, Hv1 in zip(THv, Hv)]
             num_data += float(tmp_num_data)
 
         THv = [THv1 / float(num_data) for THv1 in THv]
@@ -396,8 +402,9 @@ class hessian_pinn():
 
         while computed_dim < top_n:
             eigenvalue = None
-            v = [torch.randn(p.size()).to(device) for p in self.params
-                ]  # generate random vector
+            v = [
+                torch.randn(p.size()).to(device) for p in self.params
+            ]  # generate random vector
             v = normalization(v)  # normalize the vector
 
             for i in range(maxIter):
@@ -415,8 +422,10 @@ class hessian_pinn():
                 if eigenvalue == None:
                     eigenvalue = tmp_eigenvalue
                 else:
-                    if abs(eigenvalue - tmp_eigenvalue) / (abs(eigenvalue) +
-                                                           1e-6) < tol:
+                    if (
+                        abs(eigenvalue - tmp_eigenvalue) / (abs(eigenvalue) + 1e-6)
+                        < tol
+                    ):
                         break
                     else:
                         eigenvalue = tmp_eigenvalue
@@ -435,14 +444,11 @@ class hessian_pinn():
 
         device = self.device
         trace_vhv = []
-        trace = 0.
+        trace = 0.0
 
         for i in range(maxIter):
             self.model.zero_grad()
-            v = [
-                torch.randint_like(p, high=2, device=device)
-                for p in self.params
-            ]
+            v = [torch.randint_like(p, high=2, device=device) for p in self.params]
             # generate Rademacher random variables
             for v_i in v:
                 v_i[v_i == 0] = -1
@@ -471,10 +477,7 @@ class hessian_pinn():
         weight_list_full = []
 
         for k in range(n_v):
-            v = [
-                torch.randint_like(p, high=2, device=device)
-                for p in self.params
-            ]
+            v = [torch.randint_like(p, high=2, device=device) for p in self.params]
             # generate Rademacher random variables
             for v_i in v:
                 v_i[v_i == 0] = -1
@@ -493,8 +496,7 @@ class hessian_pinn():
                     if self.full_dataset:
                         _, w_prime = self.dataloader_hv_product(v)
                     else:
-                        w_prime = hessian_vector_product(
-                            self.gradsH, self.params, v)
+                        w_prime = hessian_vector_product(self.gradsH, self.params, v)
                     alpha = group_product(w_prime, v)
                     alpha_list.append(alpha.cpu().item())
                     w = group_add(w_prime, v, alpha=-alpha)
@@ -502,7 +504,7 @@ class hessian_pinn():
                 else:
                     beta = torch.sqrt(group_product(w, w))
                     beta_list.append(beta.cpu().item())
-                    if beta_list[-1] != 0.:
+                    if beta_list[-1] != 0.0:
                         # We should re-orth it
                         v = orthnormal(w, v_list)
                         v_list.append(v)
@@ -514,8 +516,7 @@ class hessian_pinn():
                     if self.full_dataset:
                         _, w_prime = self.dataloader_hv_product(v)
                     else:
-                        w_prime = hessian_vector_product(
-                            self.gradsH, self.params, v)
+                        w_prime = hessian_vector_product(self.gradsH, self.params, v)
                     alpha = group_product(w_prime, v)
                     alpha_list.append(alpha.cpu().item())
                     w_tmp = group_add(w_prime, v, alpha=-alpha)
