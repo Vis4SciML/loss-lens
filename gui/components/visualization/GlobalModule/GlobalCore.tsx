@@ -24,6 +24,10 @@ interface GlobalCoreProp {
     showPerformanceLabels: boolean
 }
 
+function idWrapper(id: string): string {
+    return id.replace(/\./g, "")
+}
+
 function render(
     svgRef: React.RefObject<SVGSVGElement>,
     wraperRef: React.RefObject<HTMLDivElement>,
@@ -62,7 +66,7 @@ function render(
         .domain(
             d3.extent(wholeLinks, (link) => link.weight) as [number, number]
         )
-        .range([2, 20])
+        .range([1, 30])
 
     const linkSmoothness = d3
         .scaleLinear()
@@ -97,17 +101,17 @@ function render(
 
     const nodes = wholeNodes.filter((node) => node.modelId === modelId)
 
-    const positionNode = (d: ModeNode) =>
-        `translate(${xScale(d.x)},${yScale(d.y)})`
+    const positionNode = (d: ModeNode, newScale = 1) =>
+        `translate(${xScale(d.x) * newScale},${yScale(d.y) * newScale})`
 
-    const generateCurvePath = (edge) => {
+    const generateCurvePath = (edge, newScale = 1) => {
         const [scaledSourceX, scaledSourceY] = [
-            xScale(edge.source.x),
-            yScale(edge.source.y),
+            xScale(edge.source.x) * newScale,
+            yScale(edge.source.y) * newScale,
         ]
         const [scaledTargetX, scaledTargetY] = [
-            xScale(edge.target.x),
-            yScale(edge.target.y),
+            xScale(edge.target.x) * newScale,
+            yScale(edge.target.y) * newScale,
         ]
         const [midX, midY] = [
             (scaledSourceX + scaledTargetX) / 2,
@@ -137,11 +141,14 @@ function render(
         .attr(
             "id",
             (d) =>
-                `link-${d.source.modelId}-${d.source.modeId}-${d.target.modelId}-${d.target.modeId}-link`
+                `link-${idWrapper(d.source.modelId)}-${
+                    d.source.modeId
+                }-${idWrapper(d.target.modelId)}-${d.target.modeId}-link`
         )
         .attr("stroke-width", (d) => linkThickness(d.weight))
+        .attr("stroke-opacity", 0.2)
         .attr("fill", "none")
-        .attr("d", generateCurvePath)
+        .attr("d", (d) => generateCurvePath(d))
         .on("mouseover", function (event, d) {
             d3.select(this).attr(
                 "stroke",
@@ -163,8 +170,8 @@ function render(
             tooltip.style("visibility", "hidden")
         })
 
-    const innerRadius = Math.min(w, h) * 0.05
-    const outerRadius = Math.min(w, h) * 0.1
+    const innerRadius = Math.min(w, h) * 0.025
+    const outerRadius = Math.min(w, h) * 0.045
 
     const barScale = d3
         .scaleRadial()
@@ -187,8 +194,8 @@ function render(
 
     const metricArc = d3
         .arc()
-        .innerRadius(outerRadius + 3)
-        .outerRadius(outerRadius + 20)
+        .innerRadius(outerRadius * 1.002) // outerRadius + 3 proportional
+        .outerRadius(outerRadius * 1.5) // outerRadius + 20 proportional
         .startAngle((_d, i) => (i * (2 * Math.PI)) / numberOfMetrics)
         .endAngle(
             (d, i) =>
@@ -198,8 +205,8 @@ function render(
 
     const metricArcLine = d3
         .arc()
-        .innerRadius(outerRadius + 3)
-        .outerRadius(outerRadius + 30)
+        .innerRadius(outerRadius * 1.002) // outerRadius + 3 proportional
+        .outerRadius(outerRadius * 1.5) // outerRadius + 20 proportional
         .startAngle((_d, i) => (i * (2 * Math.PI)) / numberOfMetrics)
         .endAngle((_d, i) => (i * (2 * Math.PI)) / numberOfMetrics)
 
@@ -222,8 +229,8 @@ function render(
         .data(nodes)
         .join("g")
         .attr("class", "node")
-        .attr("id", (d) => `nodeGroup-${d.modelId}-${d.modeId}`)
-        .attr("transform", positionNode)
+        .attr("id", (d) => `nodeGroup-${idWrapper(d.modelId)}-${d.modeId}`)
+        .attr("transform", (d) => positionNode(d))
 
     const localPropertyGroup = node
         .selectAll(".localPropertyGroup")
@@ -250,8 +257,8 @@ function render(
         .data((d) => [d])
         .join("circle")
         .attr("class", "outerRing")
-        .attr("id", (d) => `outerRing-${d.modelId}-${d.modeId}`)
-        .attr("r", outerRadius + 22)
+        .attr("id", (d) => `outerRing-${idWrapper(d.modelId)}-${d.modeId}`)
+        .attr("r", outerRadius * 1.5)
         .attr("fill", semiGlobalLocalSturctureColor.itemBackgroundColor)
         .attr("cx", 0)
         .attr("cy", 0)
@@ -316,17 +323,17 @@ function render(
         return "middle"
     }
 
-    const getTransformLabel = (i: number) => {
+    const getTransformLabel = (i: number, newScale = 1) => {
         const angle = performanceTextScale(String(i))
         const rotate = `rotate(${(angle * 180) / Math.PI})`
-        const translate = `translate(${0}, ${-outerRadius - 30})`
+        const translate = `translate(${0}, ${-outerRadius * 1.6 * newScale})`
         return `${rotate} ${translate}`
     }
 
-    const getTransformValue = (i: number) => {
+    const getTransformValue = (i: number, newScale = 1) => {
         const angle = performanceTextScale(String(i))
         const rotate = `rotate(${(angle * 180) / Math.PI})`
-        const translate = `translate(${0}, ${-outerRadius - 3})`
+        const translate = `translate(${0}, ${-outerRadius * 1.1 * newScale})`
         return `${rotate} ${translate}`
     }
 
@@ -340,7 +347,7 @@ function render(
         )
         .attr("fill", semiGlobalLocalSturctureColor.textColor)
         .attr("stroke", "none")
-        .attr("font-size", "1.2rem")
+        .attr("font-size", `${innerRadius * 0.5}px`)
         .attr("transform", (_d, i) => getTransformLabel(i))
         .text((d) => d[0].charAt(0).toUpperCase() + d[0].slice(1))
 
@@ -355,7 +362,7 @@ function render(
         .attr("transform", (_d, i) => getTransformValue(i))
         .attr("fill", semiGlobalLocalSturctureColor.textColor)
         .attr("stroke", "none")
-        .attr("font-size", "1rem")
+        .attr("font-size", `${innerRadius * 0.48}px`)
         .text((d) => roundToPercentage(d[1]))
 
     hessianGroup
@@ -363,8 +370,8 @@ function render(
         .data((d) => [d])
         .join("circle")
         .attr("class", "middleRing")
-        .attr("id", (d) => `middleRing-${d.modelId}-${d.modeId}`)
-        .attr("r", outerRadius + 2)
+        .attr("id", (d) => `middleRing-${idWrapper(d.modelId)}-${d.modeId}`)
+        .attr("r", outerRadius * 1.002)
         .attr("fill", semiGlobalLocalSturctureColor.itemInnerBackgroundColor)
         .attr("cx", 0)
         .attr("cy", 0)
@@ -414,7 +421,7 @@ function render(
         .data((d) => [d])
         .join("circle")
         .attr("class", "innerRing")
-        .attr("id", (d) => `innerRing-${d.modelId}-${d.modeId}`)
+        .attr("id", (d) => `innerRing-${idWrapper(d.modelId)}-${d.modeId}`)
         .attr("r", barScale(0))
         .attr("fill", semiGlobalLocalSturctureColor.itemInnerBackgroundColor)
         .attr("cx", 0)
@@ -427,23 +434,27 @@ function render(
         .data((d) => [d])
         .join("circle")
         .attr("class", "circle")
-        .attr("id", (d) => `circle-${d.modelId}-${d.modeId}`)
-        .attr("r", 13)
+        .attr("id", (d) => `circle-${idWrapper(d.modelId)}-${d.modeId}`)
+        .attr("r", innerRadius * 0.52)
         .attr("fill", (d) => modelColorMap[d.modelId])
         .attr("stroke", "none")
         .attr("cx", 0)
         .attr("cy", 0)
         .on("mouseover", (_event, d) => {
-            svgbase.selectAll(".node").style("opacity", 0.01)
+            svgbase.selectAll(".node").style("opacity", 0)
             svgbase
-                .select(`#nodeGroup-${d.modelId}-${d.modeId}`)
-                .style("opacity", 0.8)
+                .select(`#nodeGroup-${idWrapper(d.modelId)}-${d.modeId}`)
+                .style("opacity", 1)
                 .raise()
             svgbase.selectAll(".link").style("stroke-opacity", 0)
-            const sourceSelector = `[id^='link-${d.modelId}-${d.modeId}-']`
-            const targetSelector = `[id$='-${d.modelId}-${d.modeId}-link']`
+            const sourceSelector = `[id^='link-${idWrapper(d.modelId)}-${
+                d.modeId
+            }-']`
+            const targetSelector = `[id$='-${idWrapper(d.modelId)}-${
+                d.modeId
+            }-link']`
             svgbase
-                .select(`#circle-${d.modelId}-${d.modeId}`)
+                .select(`#circle-${idWrapper(d.modelId)}-${d.modeId}`)
                 .style("cursor", "pointer")
                 .style("opacity", 1)
             svgbase
@@ -453,9 +464,9 @@ function render(
         })
         .on("mouseout", (_event, d) => {
             svgbase.selectAll(".node").style("opacity", 1)
-            svgbase.selectAll(".link").style("stroke-opacity", 1)
+            svgbase.selectAll(".link").style("stroke-opacity", 0.2)
             svgbase
-                .select(`#${d.modelId}-${d.modeId}`)
+                .select(`#circle-${idWrapper(d.modelId)}-${d.modeId}`)
                 .style("cursor", "default")
         })
         .on("click", (_event, d) => {
@@ -466,7 +477,7 @@ function render(
             svgbase.selectAll(".node").style("opacity", 1)
             svgbase.selectAll(".link").style("stroke-opacity", 1)
             svgbase
-                .selectAll(`#outerRing-${d.modelId}-${d.modeId}`)
+                .selectAll(`#outerRing-${idWrapper(d.modelId)}-${d.modeId}`)
                 .attr("stroke-width", 4)
                 .attr("stroke", modelColorMap[d.modelId])
             updateSelectedModelIdModeId(
@@ -479,6 +490,30 @@ function render(
         .zoom()
         .on("zoom", (event) => {
             svgbase.select(".zoom-container").attr("transform", event.transform)
+            const newScale = event.transform.k * 4 // Increase the magnitude of the zoom scale
+            svgbase.selectAll(".node").attr("transform", (d) => {
+                return positionNode(d, newScale)
+            })
+            svgbase
+                .selectAll(".link")
+                .attr("d", (d) => generateCurvePath(d, newScale))
+                .attr("stroke-width", (d) => linkThickness(d.weight) / newScale) // Scale the thickness of the edges
+            // svgbase
+            //     .selectAll(".circle")
+            //     .attr("r", (innerRadius * 0.52) / newScale) // Scale the size of the nodes
+            // svgbase.selectAll(".innerRing").attr("r", barScale(0) / newScale) // Scale the size of the inner ring
+            // svgbase
+            //     .selectAll(".outerRing")
+            //     .attr("r", (outerRadius * 1.5) / newScale) // Scale the size of the outer ring
+            // svgbase
+            //     .selectAll(".middleRing")
+            //     .attr("r", (outerRadius * 1.002) / newScale) // Scale the size of the middle ring
+            // svgbase
+            //     .selectAll(".performanceLabel")
+            //     .attr("font-size", `${(innerRadius * 0.8) / newScale}px`) // Scale the size of the performance labels
+            // svgbase
+            //     .selectAll(".performanceText")
+            //     .attr("font-size", `${(innerRadius * 0.8) / newScale}px`) // Scale the size of the performance text
         })
         .extent([
             [0, 0],
@@ -497,7 +532,7 @@ function render(
         .duration(0)
         .call(
             zoom.transform,
-            d3.zoomIdentity.scale(0.52).translate(centerX, centerY - 100)
+            d3.zoomIdentity.scale(0.5).translate(centerX, centerY)
         )
 
     // Render modelMetaData as a compact information card

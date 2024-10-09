@@ -32,6 +32,9 @@ from pinn.pbc_examples.net_pbc import *
 from pinn.pbc_examples.utils import *
 from pinn.pbc_examples.systems_pbc import *
 from pinn.pyhessian import hessian_pinn
+from loss_landscapes_pinn import *
+from loss_landscapes_pinn.metrics import *
+
 
 # import loss_landscapes
 # import loss_landscapes.metrics
@@ -494,8 +497,14 @@ def compute_mode_losslandscape(
     model_id: str, mode_id: str
 ) -> Tuple[np.ndarray, float, float]:
     mode = load_mode(model_id, mode_id)
-    data = load_data(model_id, train=False)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    def get_params(model_orig, model_perb, direction, alpha):
+        for m_orig, m_perb, d in zip(
+            model_orig.parameters(), model_perb.parameters(), direction
+        ):
+            m_perb.data = m_orig.data + alpha * d
+        return model_perb
 
     if (
         model_id == "pinn_convection_beta1"
@@ -503,6 +512,7 @@ def compute_mode_losslandscape(
         or model_id == "PINN_convection_beta_1.0"
         or model_id == "PINN_convection_beta_50.0"
     ):
+        # Data preparation for PINN
         x = np.linspace(0, 2 * np.pi, 256, endpoint=False).reshape(-1, 1)
         t = np.linspace(0, 1, 100).reshape(-1, 1)
         X, T = np.meshgrid(x, t)
@@ -517,52 +527,90 @@ def compute_mode_losslandscape(
 
         X_f_train = sample_random(X_star_noinitial_noboundary, 100)
         x, y = iter(X_f_train).__next__()
-        x = torch.tensor(X[:, 0:1], requires_grad=True).float().to(DEVICE)
-        t = torch.tensor(X[:, 1:2], requires_grad=True).float().to(DEVICE)
+        x = torch.tensor(X[:, 0:1], requires_grad=True).float().to(device)
+        t = torch.tensor(X[:, 1:2], requires_grad=True).float().to(device)
 
-        pll = loss_landscapes.PlanarLossLandscape(
-            mode.dnn, steps=20, deepcopy_model=True
-        )
-        pll.random_plain(
-            distance=1, normalization="layer", random="normal", centered=True
-        )
-        pll.stats_initializer()
+        # Initialize model copies for perturbation
+        model_init = copy.deepcopy(mode.dnn)
+        model_perb = copy.deepcopy(mode.dnn)
+        model_current = copy.deepcopy(mode.dnn)
 
-        metric = loss_landscapes.metrics.Loss(nn.MSELoss(), x.to(device), y.to(device))
-        pll.warm_up(metric)
-        losslandscape = pll.compute(metric)
+        # Calculate the random plane directions
+        directions = random_n_dirctions_pinn(
+            model_init,
+            LossPINN(x, t),
+            dim=2,  # Assuming 3D as in the original script
+            distance=10,
+            steps=21,
+            normalization="filter",
+            deepcopy_model=True,
+        )
+
+        lams = np.linspace(-2.0, 2.0, 21).astype(np.float32)
+
+        # Create a data matrix to store loss values
+        data_matrix = np.empty([21 * 21, 1], dtype=float)  # Assuming 9261 points
+        data_matrix.fill(-1)
+
+        # Calculate the hessian loss values
+        for j in range(21 * 21):
+            next_pos = np.unravel_index(j, (21, 21))
+            model_current = copy.deepcopy(model_init)
+            for i in range(2):
+                model_perb = get_params(
+                    model_current, model_perb, directions[i], lams[next_pos[i]]
+                )
+                model_current = copy.deepcopy(model_perb)
+
+            # Calculate the loss value
+            mode.dnn = copy.deepcopy(model_current)
+            if torch.is_grad_enabled():
+                mode.optimizer.zero_grad()
+            u_pred = model_current(torch.cat([x, t], dim=1))
+            u_pred_lb = mode.net_u(mode.x_bc_lb, mode.t_bc_lb)
+            u_pred_ub = mode.net_u(mode.x_bc_ub, mode.t_bc_ub)
+            if mode.nu != 0:
+                u_pred_lb_x, u_pred_ub_x = mode.net_b_derivatives(
+                    u_pred_lb, u_pred_ub, mode.x_bc_lb, mode.x_bc_ub
+                )
+            f_pred = mode.net_f(mode.x_f, mode.t_f)
+
+            if mode.loss_style == "mean":
+                loss_u = torch.mean((t - u_pred) ** 2)
+                loss_b = torch.mean((u_pred_lb - u_pred_ub) ** 2)
+                if mode.nu != 0:
+                    loss_b += torch.mean((u_pred_lb_x - u_pred_ub_x) ** 2)
+                loss_f = torch.mean(f_pred**2)
+            elif mode.loss_style == "sum":
+                loss_u = torch.mean((t - u_pred) ** 2)
+                loss_b = torch.sum((u_pred_lb - u_pred_ub) ** 2)
+                if mode.nu != 0:
+                    loss_b += torch.sum((u_pred_lb_x - u_pred_ub_x) ** 2)
+                loss_f = torch.sum(f_pred**2)
+
+            loss = loss_u + loss_b + mode.L * loss_f
+            data_matrix[j] = loss.detach().cpu().numpy()
+
+        max_value = np.max(data_matrix)
+        min_value = np.min(data_matrix)
+        # print("data_matrix")
+        # print(data_matrix.shape)
+        # print(data_matrix)
+        # print(max_value, min_value)
+        # save data_matrix as npy, with name as model_id + mode_id + losslandscape, in folder ./data/paraview_files
+        np.save(
+            f"../data/paraview_files/{model_id}_{mode_id}_losslandscape.npy",
+            data_matrix,
+        )
+
+        data_matrix = data_matrix.reshape(21, 21)
+        data_matrix_list = data_matrix.tolist()
+        return data_matrix_list, max_value, min_value
 
     else:
-        pll = loss_landscapes.PlanarLossLandscape(mode, steps=20, deepcopy_model=True)
-        pll.random_plain(
-            distance=1, normalization="layer", random="normal", centered=True
+        raise NotImplementedError(
+            "Non-PINN scenarios are not implemented in this refactor."
         )
-        pll.stats_initializer()
-
-        if isinstance(data, DataLoader):
-            losslandscape = np.zeros((20, 20))
-            for i in range(20):
-                for j in range(20):
-                    loss_eval_caller = SimpleLossEvalCaller(
-                        data, nn.CrossEntropyLoss(), device
-                    )
-                    losslandscape[i] = pll.outer_compute(i, j, loss_eval_caller)
-        elif isinstance(data, List):
-            x, y, *_ = iter(data).__next__()
-            metric = loss_landscapes.metrics.Loss(
-                nn.CrossEntropyLoss(), x.to(device), y.to(device)
-            )
-            pll.warm_up(metric)
-            losslandscape = pll.compute(metric)
-        else:
-            raise TypeError(
-                "The data is neither a dataloader nor a batch from dataloader."
-            )
-
-    max_value = np.max(losslandscape)
-    min_value = np.min(losslandscape)
-
-    return losslandscape, max_value, min_value
 
 
 def compute_mode_merge_tree(
@@ -683,7 +731,12 @@ def compute_cka_similarity(
 
         flatten_mode0 = flatten_mode0.detach().numpy().reshape((34, 32))
         flatten_mode1 = flatten_mode1.detach().numpy().reshape((34, 32))
-    elif model0_id == "pinn_convection_beta1" or model0_id == "pinn_convection_beta50":
+    elif (
+        model0_id == "pinn_convection_beta1"
+        or model0_id == "pinn_convection_beta50"
+        or model0_id == "PINN_convection_beta_1.0"
+        or model0_id == "PINN_convection_beta_50.0"
+    ):
         mode0 = mode0.dnn
         mode1 = mode1.dnn
         flatten_mode0 = torch.cat(

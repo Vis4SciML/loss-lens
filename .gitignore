@@ -33,3 +33,7 @@ server/calculate/cnn_result_files/*
 server/calculate/resnet18_result_files/*
 local_saved_files
 *.icloud
+
+
+server/calculate/data/
+server/calculate/training_scripts/loss_landscapes_pinn/

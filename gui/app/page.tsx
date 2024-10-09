@@ -98,11 +98,11 @@ export default function IndexPage() {
     const localStructureHeight = height * 0.3
 
     return (
-        <section className="h-screen w-screen">
+        <div className="h-screen w-screen">
             <div className="grid h-full grid-cols-12">
                 <div
-                    className={`col-span-${
-                        isControlPanelOpen ? "2" : "1"
+                    className={`${
+                        isControlPanelOpen ? "col-span-2" : "col-span-1"
                     } h-full`}
                 >
                     <div className="h-full">
@@ -251,6 +251,6 @@ export default function IndexPage() {
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
     )
 }
