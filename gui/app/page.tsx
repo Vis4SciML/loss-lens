@@ -4,6 +4,9 @@ import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
 import { atom, useAtom } from "jotai"
 
+// Remove the import for react-range
+// import { Range } from "react-range"
+
 import { siteConfig } from "@/config/site"
 import { systemConfigAtom } from "@/lib/store"
 import { Button } from "@/components/ui/button"
@@ -15,6 +18,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider" // Import your custom slider
+
 import { Icons } from "@/components/icons"
 
 const GlobalModuleNoSSR = dynamic(
@@ -71,6 +76,8 @@ export default function IndexPage() {
     const [showPerformanceLabels, setShowPerformanceLabels] = useState(true)
     const [lossRange, setLossRange] = useState([0, 100])
     const [isControlPanelOpen, setIsControlPanelOpen] = useState(true)
+    const [showModelInfo, setShowModelInfo] = useState(true)
+    const [mcFilterRange, setMcFilterRange] = useState<[-100, 0]>([-100, 0]) // Update initial range
 
     const handleClick = () => {
         setSystemConfigs((prev) => ({
@@ -151,7 +158,28 @@ export default function IndexPage() {
                                             <div className="mb-2 font-serif text-sm font-bold">
                                                 Global View Settings
                                             </div>
-                                            <div className="flex items-center justify-between">
+                                            <div className="mt-2 flex items-center justify-between">
+                                                <label
+                                                    htmlFor="showPerformanceLabels"
+                                                    className="mr-2"
+                                                >
+                                                    Show Performance Labels
+                                                </label>
+                                                <Checkbox
+                                                    id="showPerformanceLabels"
+                                                    checked={
+                                                        showPerformanceLabels
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        setShowPerformanceLabels(
+                                                            checked === true
+                                                        )
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="mt-2 flex items-center justify-between">
                                                 <label
                                                     htmlFor="showPerformance"
                                                     className="mr-2"
@@ -191,24 +219,48 @@ export default function IndexPage() {
                                             </div>
                                             <div className="mt-2 flex items-center justify-between">
                                                 <label
-                                                    htmlFor="showPerformanceLabels"
+                                                    htmlFor="showModelInfo"
                                                     className="mr-2"
                                                 >
-                                                    Show Performance Labels
+                                                    Show Model Info
                                                 </label>
                                                 <Checkbox
-                                                    id="showPerformanceLabels"
-                                                    checked={
-                                                        showPerformanceLabels
-                                                    }
+                                                    id="showModelInfo"
+                                                    checked={showModelInfo}
                                                     onCheckedChange={(
                                                         checked
                                                     ) =>
-                                                        setShowPerformanceLabels(
+                                                        setShowModelInfo(
                                                             checked === true
                                                         )
                                                     }
                                                 />
+                                            </div>
+                                            <div className="mt-2">
+                                                <label
+                                                    htmlFor="mcFilter"
+                                                    className="mr-2"
+                                                >
+                                                    Mode Connectivity Filter
+                                                </label>
+                                                <Slider
+                                                    className="mt-2"
+                                                    min={-100}
+                                                    max={0}
+                                                    step={1}
+                                                    value={mcFilterRange} // Pass the value to the Slider
+                                                    onValueChange={
+                                                        setMcFilterRange
+                                                    } // Use onValueChange to update the state
+                                                />
+                                                <div className="mt-1 flex justify-between text-xs">
+                                                    <span>
+                                                        {mcFilterRange[0]}
+                                                    </span>
+                                                    <span>
+                                                        {mcFilterRange[1]}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -240,6 +292,8 @@ export default function IndexPage() {
                                 showPerformance={showPerformance}
                                 showHessian={showHessian}
                                 showPerformanceLabels={showPerformanceLabels}
+                                showModelInfo={showModelInfo}
+                                mcFilterRange={mcFilterRange}
                             />
                         </div>
                         <div className="flex-shrink-0">

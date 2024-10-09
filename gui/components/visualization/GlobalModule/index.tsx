@@ -17,12 +17,16 @@ export default function GlobalModule({
     showPerformance,
     showHessian,
     showPerformanceLabels,
+    showModelInfo,
+    mcFilterRange,
 }: {
     height: number
     width: number
     showPerformance: boolean
     showHessian: boolean
     showPerformanceLabels: boolean
+    showModelInfo: boolean
+    mcFilterRange: [number, number]
 }) {
     const [loader] = useAtom(loadableSemiGlobalLocalStructureAtom)
     const [selectedCheckPointIdList, setSelectedCheckPointIdList] = useAtom(
@@ -109,6 +113,8 @@ export default function GlobalModule({
                                     showPerformanceLabels={
                                         showPerformanceLabels
                                     }
+                                    showModelInfo={showModelInfo}
+                                    mcFilterRange={mcFilterRange}
                                 />
                             </div>
                         )

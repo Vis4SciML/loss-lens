@@ -22,6 +22,8 @@ interface GlobalCoreProp {
     showPerformance: boolean
     showHessian: boolean
     showPerformanceLabels: boolean
+    showModelInfo: boolean
+    mcFilterRange: [number, number]
 }
 
 function idWrapper(id: string): string {
@@ -40,8 +42,10 @@ function render(
     showPerformance: boolean,
     showHessian: boolean,
     showPerformanceLabels: boolean,
+    showModelInfo: boolean,
     width: number,
-    height: number
+    height: number,
+    mcFilterRange: [number, number]
 ) {
     const svgbase = d3.select(svgRef.current)
     const margin = { top: 10, right: 10, bottom: 10, left: 10 }
@@ -96,7 +100,10 @@ function render(
 
     const links = wholeLinks.filter(
         (link) =>
-            link.source.modelId === modelId && link.target.modelId === modelId
+            link.source.modelId === modelId &&
+            link.target.modelId === modelId &&
+            link.weight >= mcFilterRange[0] &&
+            link.weight <= mcFilterRange[1] // Filter based on mcFilterRange
     )
 
     const nodes = wholeNodes.filter((node) => node.modelId === modelId)
@@ -519,7 +526,7 @@ function render(
             [0, 0],
             [width, height],
         ])
-        .scaleExtent([0.5, 8])
+        .scaleExtent([0.1, 8])
 
     svgbase.call(zoom)
 
@@ -542,6 +549,7 @@ function render(
         .attr("y", height - 160)
         .attr("width", width - 20)
         .attr("height", 160)
+        .style("display", showModelInfo ? "block" : "none") // Toggle visibility
         .append("xhtml:div")
         .style("border", "1px solid black")
         .style("padding", "5px")
@@ -587,6 +595,8 @@ export default function GlobalCore({
     showPerformance,
     showHessian,
     showPerformanceLabels,
+    showModelInfo,
+    mcFilterRange,
 }: GlobalCoreProp): React.JSX.Element {
     const svg = React.useRef<SVGSVGElement>(null)
     const wraperRef = React.useRef<HTMLDivElement>(null)
@@ -627,8 +637,10 @@ export default function GlobalCore({
             showPerformance,
             showHessian,
             showPerformanceLabels,
+            showModelInfo,
             width,
-            height
+            height,
+            mcFilterRange
         )
         setIsInitialized(true)
     }, [data, isInitialized])
@@ -645,7 +657,24 @@ export default function GlobalCore({
         svgElement
             .selectAll(".performanceLabel")
             .style("opacity", showPerformanceLabels ? 1 : 0)
-    }, [showPerformance, showHessian, showPerformanceLabels, isInitialized])
+        svgElement
+            .selectAll("foreignObject")
+            .style("display", showModelInfo ? "block" : "none")
+        svgElement
+            .selectAll(".link")
+            .style("display", (d) =>
+                d.weight >= mcFilterRange[0] && d.weight <= mcFilterRange[1]
+                    ? "block"
+                    : "none"
+            )
+    }, [
+        showPerformance,
+        showHessian,
+        showPerformanceLabels,
+        showModelInfo,
+        isInitialized,
+        mcFilterRange,
+    ])
 
     return (
         <div ref={wraperRef} className="h-full w-full rounded border">
